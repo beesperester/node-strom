@@ -44,3 +44,20 @@ export const hashFile = (chunkSize) => (file) => {
 
 	return hash.digest('hex')
 }
+
+export const pathFromHash = (length) => (depth) => (hash) => {
+  const pathParts = [];
+  
+  if (length * depth < hash.length) {
+    for (let i = 0; i < depth; i++) {
+      const start = i * length;
+      const end = start + length;
+
+      pathParts.push(hash.slice(start, end));
+    }
+
+    pathParts.push(hash.slice(length * depth));
+  }
+
+  return pathParts.join('/');
+};

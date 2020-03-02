@@ -1,10 +1,12 @@
 import S from 'sanctuary'
 import path from 'path'
+import fs from 'fs'
 import { addLeaf } from './dict'
 import { walk } from './filesystem'
-import { hashFile, hashFileOld } from './hash'
-import { minimatchFilter, attempt } from './utilities'
+import { hashFile, pathFromHash } from './hash'
+import { minimatchFilter } from './utilities'
 import { inflate } from './dict'
+import { fstat } from 'fs'
 
 export const filesFromDirectory = (directory) => {
 	const files = []
@@ -30,26 +32,51 @@ export const hashFiles = (files) => {
 	const result = {}
 
 	files.forEach((path) => {
-		result[path] = hashFile(path)
+		result[path] = hashFile(4096)(path)
 	})
 
 	return result
 }
 
+export const localize = (files) => {
+	Object.keys(files).forEach((file) => {
+		const hash = files[file]
+		const blobFile = path.join(directory, '.strom', 'blobs', pathFromHash(2)(2)(hash))
+
+		if (!fs.existsSync(blobFile)) {
+			fs.mkdirSync(path.dirname(blobFile), { recursive: true })
+			fs.copyFileSync(file, blobFile)
+		}
+	})
+
+	return files
+}
+
 const directory = '/Users/bernhardesperester/git/node-strom/data'
 
-console.log(hashFile(1024)('/Users/bernhardesperester/git/node-strom/data/asset/setup-cinema4d/tex/normal.png'))
+const tree = S.pipe([
+	S.encase(filesFromDirectory),
+	S.chain(
+		S.encase(minimatchFilter(['!.strom', '**/*.png']))
+	),
+	S.chain(
+		S.encase(hashFiles)
+	),
+	S.chain(
+		S.encase(localize)
+	)
+	// S.map((files) => {
+	// 	const result = {}
 
-const test = hashFileOld('/Users/bernhardesperester/git/node-strom/data/asset/setup-cinema4d/tex/normal.png')
+	// 	Object.keys(files).forEach((key) => {
+	// 		result[key.replace(directory, '')] = files[key]
+	// 	})
 
-test.then(console.log)
+	// 	return result
+	// }),
+	// S.chain(
+	// 	S.encase(inflate)
+	// )
+])(directory)
 
-// console.log(S.pipe([
-// 	S.encase(filesFromDirectory),
-// 	S.chain(
-// 		S.encase(minimatchFilter(['**/*.png']))
-// 	),
-// 	S.chain(
-// 		S.encase(hashFiles)
-// 	)
-// ])(directory))
+console.log(JSON.stringify(tree.value, undefined, 2))
