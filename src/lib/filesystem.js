@@ -14,3 +14,5 @@ export function* walk(directory) {
 		}
 	}
 }
+
+export const mkdirs = (dirs) => !fs.statSync(dirs).isDirectory() ? fs.mkdirSync(dirs, { recursive: true }) : undefined
