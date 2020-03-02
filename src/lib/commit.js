@@ -1,10 +1,14 @@
-export const createCommit = (author) => (commits) => (message) => (stage) => {
+import { hashString } from "./hash"
+import { serialize } from "./utilities"
+
+export const createCommit = (repository) => (message) => {
+	const data = {
+		parent: repository.head.commit,
+		message
+	}
+
 	return {
-		author,
-		commits,
-		message,
-		stage
+		id: hashString(serialize(data)),
+		...data
 	}
 }
-
-export const commit = () => {}

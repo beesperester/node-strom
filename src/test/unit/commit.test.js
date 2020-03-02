@@ -8,40 +8,15 @@ import strom from '../../index'
 describe('tests strom.lib.commit module', function () {
 	describe('tests createCommit', function () {
 		it('succeeds with expected arguments', function () {
-			const author = strom.lib.author.createAuthor('Bernhard Esperester <bernhard@esperester.de>')
-			const commits = []
-			const message = 'initial commit'
-			const stage = strom.lib.stage.createStage([
-				'some/file.txt'
-			])
-			const received = strom.lib.commit.createCommit(author)(commits)(message)(stage)
+			const repository = strom.lib.repository.createRepository('test')
+			const received = strom.lib.commit.createCommit(repository)('initial commit')
 			const expected = {
-				author: {
-					username: 'Bernhard Esperester <bernhard@esperester.de>'
-				},
-				commits: [],
-				message: 'initial commit',
-				stage: {
-					files: [
-						'some/file.txt'
-					]
-				}
+				id: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e',
+				parent: null,
+				message: 'initial commit'
 			}
 
 			expect(received).to.deep.equal(expected)
-		})
-	})
-
-	describe('tests commit', function () {
-		it('succeeds with expected arguments', function () {
-			const author = strom.lib.author.createAuthor('Bernhard Esperester <bernhard@esperester.de>')
-			const commits = []
-			const message = 'initial commit'
-			const stage = strom.lib.stage.createStage([
-				'some/file.txt'
-			])
-			const commit = strom.lib.commit.createCommit(author)(commits)
-			const 
 		})
 	})
 })

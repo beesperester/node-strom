@@ -4,6 +4,8 @@ import * as hash from './hash'
 import * as commit from './commit'
 import * as author from './author'
 import * as stage from './stage'
+import * as repository from './repository'
+import * as branch from './branch'
 
 export default {
 	dict,
@@ -11,5 +13,7 @@ export default {
 	hash,
 	commit,
 	author,
-	stage
+	stage,
+	repository,
+	branch
 }

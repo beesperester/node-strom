@@ -32,3 +32,5 @@ export const attempt = (f) => {
     return S.Left(new Error('Unable to attempt function call'))
   }
 }
+
+export const serialize = (data) => JSON.stringify(data, undefined, 2)

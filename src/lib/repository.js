@@ -1,35 +1,49 @@
-import path from 'path'
-import { mkdirSync } from 'fs'
+import { createBranch } from "./branch"
 
-export const createRepository = (root) => {
-	const config = {
-		head: ''
-	}
+export const createRepository = (name) => {
+	const master = createBranch('master')(null)
 
 	return {
-		root,
-		repository: {
-			'.strom': {
-				blobs: {},
-				'config.json': JSON.stringify(config, undefined, 2)
-			}
-		}
+		name,
+		branches: [
+			master
+		],
+		history: [],
+		head: master
 	}
 }
 
-export const getRepositoryDirectory = (repository) => path.join(repository.root, repository.repository)
-
-export const getBlobsDirectory = (repository) => path.join(getRepositoryDirectory(repository), repository.blobs)
-
-export const getConfigFile = (repository) => path.join(getRepositoryDirectory(repository), repository.config)
-
-export const initializeRepository = (repository) => {
-	const directories = [
-		getRepositoryDirectory(repository),
-		getBlobsDirectory(repository)
+export const checkout = (repository) => (branchName) => {
+	const branches = [
+		...repository.branches
 	]
 
-	directories.forEach((directory) => {
-		mkdirSync(directory)
-	})
+	let branch = branches.find((branch) => branch.name === branchName)
+
+	if (!branch) {
+		// create new branch if not in existing branches
+		branch = createBranch(branchName)(repository.head.commit)
+
+		branches.push(branch)
+	}
+
+	return {
+		...repository,
+		branches,
+		head: branch
+	}
+}
+
+export const commit = (repository) => (commit) => {
+	return {
+		...repository,
+		history: [
+			...repository.history,
+			commit
+		],
+		head: {
+			...repository.head,
+			commit: commit.id
+		}
+	}
 }
