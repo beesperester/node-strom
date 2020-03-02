@@ -1,25 +1,7 @@
 import fs from 'fs'
 import crypto from 'crypto'
 
-export const hashFileOld = (file) => {
-	const hash = crypto.createHash('sha256')
-
-	return new Promise((resolve, reject) => {
-		const input = fs.createReadStream(file);
-
-		input.on('readable', () => {
-			const data = input.read();
-
-			if (data)
-				hash.update(data);
-			else {
-				resolve(hash.digest('hex'))
-			}
-		})
-
-		input.on('error', reject)
-	})
-}
+export const hashString = (string) => crypto.createHash('sha256').update(string).digest('hex');
 
 export const hashFile = (chunkSize) => (file) => {
 	const hash = crypto.createHash('sha256')
