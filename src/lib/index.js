@@ -1,19 +1,17 @@
-import * as dict from './dict'
-import * as utilities from './utilities'
-import * as hash from './hash'
-import * as commit from './commit'
-import * as author from './author'
-import * as stage from './stage'
-import * as repository from './repository'
 import * as branch from './branch'
+import * as commit from './commit'
+import * as dict from './dict'
+import * as filesystem from './filesystem'
+import * as hash from './hash'
+import * as repository from './repository'
+import * as utilities from './utilities'
 
 export default {
-	dict,
-	utilities,
-	hash,
+	branch,
 	commit,
-	author,
-	stage,
+	dict,
+	filesystem,
+	hash,
 	repository,
-	branch
+	utilities
 }

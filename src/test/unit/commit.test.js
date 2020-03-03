@@ -6,17 +6,23 @@ import { describe, it } from 'mocha'
 import strom from '../../index'
 
 describe('tests strom.lib.commit module', function () {
-	describe('tests createCommit', function () {
-		it('succeeds with expected arguments', function () {
-			const repository = strom.lib.repository.createRepository('test')
-			const received = strom.lib.commit.createCommit(repository)('initial commit')
-			const expected = {
-				id: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e',
-				parent: null,
-				message: 'initial commit'
-			}
+	const filesystem = strom.lib.filesystem.createFilesystem()
+	const hashPath = strom.lib.hash.pathFromHash(2)(2)
 
-			expect(received).to.deep.equal(expected)
-		})
+	it('succeeds to createCommit', function () {
+		const received = strom.lib.commit.createCommit()('initial commit')
+		const expected = {
+			parent: null,
+			message: 'initial commit'
+		}
+
+		expect(received).to.deep.equal(expected)
+
+		const serialized = strom.lib.utilities.serialize(received)
+		const hash = strom.lib.hash.hashString(serialized)
+
+		strom.lib.dict.addLeaf(filesystem)(hashPath(hash))(serialized)
+
+		console.log(filesystem)
 	})
 })
