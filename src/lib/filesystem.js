@@ -1,21 +1,31 @@
 import { addLeaf, getLeaf, removeLeaf } from './dict'
 
 export const adapter = (storage) => {
+  let clone = Object.assign({}, storage)
+
 	return {
     write: (path) => (contents) => {
-      return addLeaf(storage)(path)(contents)
+      clone = addLeaf(clone)(path)(contents)
+
+      return clone
     },
 
     read: (path) => {
-      return getLeaf(storage)(path)
+      clone = getLeaf(clone)(path)
+
+      return clone
     },
 
     remove: (path) => {
-      return removeLeaf(storage)(path)
+      clone = removeLeaf(clone)(path)
+
+      return clone
     },
 
     mkdir: (path) => {
-      return addLeaf(storage)(path)({})
+      clone = addLeaf(clone)(path)({})
+
+      return clone
     },
 
     lsdir: (path) => {
@@ -23,7 +33,9 @@ export const adapter = (storage) => {
     },
 
     rmdir: (path) => {
-      return removeLeaf(storage)(path)
+      clone = removeLeaf(storage)(path)
+
+      return clone
     }
   }
 }
