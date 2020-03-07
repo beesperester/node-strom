@@ -12,17 +12,18 @@ describe('tests strom.lib.commit module', function () {
 
 	describe('tests createCommit', function () {
 		it('succeeds', function () {
-			const received = strom.lib.commit.createCommit(filesystem)(null)('initial commit')
-			const expected = '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e'
+			const received = strom.lib.commit.createCommit(filesystem)(null)(null)('initial commit')
+			const expected = '95054ee719fc41bb1095efb3db3673f423b3cb2b9b505ac0d13b78f5a471aaf4'
 
 			expect(received).to.equal(expected)
 
 			const expectedFilesystemState = {
 				objects: {
-					'11': {
-						'40': {
-							'17fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e': serialize({
+					'95': {
+						'05': {
+							'4ee719fc41bb1095efb3db3673f423b3cb2b9b505ac0d13b78f5a471aaf4': serialize({
 								parent: null,
+								tree: null,
 								message: 'initial commit'
 							})
 						}
@@ -31,6 +32,19 @@ describe('tests strom.lib.commit module', function () {
 			}
 
 			expect(adapter.state()).to.deep.equal(expectedFilesystemState)
+		})
+	})
+
+	describe('tests getCommit', function () {
+		it('succeeds', function () {
+			const received = strom.lib.commit.getCommit(filesystem)('95054ee719fc41bb1095efb3db3673f423b3cb2b9b505ac0d13b78f5a471aaf4')
+			const expected = {
+				parent: null,
+				tree: null,
+				message: 'initial commit'
+			}
+
+			expect(received).to.deep.equal(expected)
 		})
 	})
 })
