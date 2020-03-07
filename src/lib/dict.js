@@ -64,7 +64,11 @@ export const getLeaf = (branch) => (path) => {
 	const pathParts = pathToArray('/')(path)
 
 	for (let part of pathParts) {
-		if (branch === undefined || typeof branch !== 'object') {
+		if (branch === undefined) {
+			throw new Error(`Unable to find ${path}`)
+		}
+
+		if (typeof branch !== 'object') {
 			return branch
 		}
 
