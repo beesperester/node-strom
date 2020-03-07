@@ -30,7 +30,7 @@ describe('tests strom.lib.commit module', function () {
 				}
 			}
 
-			expect(adapter.peek()).to.deep.equal(expectedFilesystemState)
+			expect(adapter.state()).to.deep.equal(expectedFilesystemState)
 		})
 	})
 })

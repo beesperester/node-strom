@@ -6,7 +6,7 @@ export const createAdapter = (storage) => {
 	let clone = Object.assign({}, storage)
 
 	return {
-		peek: () => {
+		state: () => {
 			return clone
 		},
 

@@ -18,8 +18,8 @@ export const getHead = (filesystem) => {
 	return filesystem.read(path.join(paths.branches, branchName))
 }
 
-export const setHead = (filesystem) => (branch) => {
-	filesystem.write(paths.head)(branch.name)
+export const setHead = (filesystem) => (branchName) => {
+	filesystem.write(paths.head)(branchName)
 
-	return branch.name
+	return branchName
 }

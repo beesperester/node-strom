@@ -14,14 +14,13 @@ describe('tests strom.lib.head module', function () {
 		it('succeeds', function () {
 			strom.lib.head.createHead(filesystem)
 
-			const received = adapter.peek()
+			const received = adapter.state()
 			const expected = {
 				refs: {
 					head: serialize('master')
 				},
 				branches: {
 					master: serialize({
-						name: 'master',
 						commit: null
 					})
 				}
@@ -35,7 +34,6 @@ describe('tests strom.lib.head module', function () {
 		it('succeeds', function () {
 			const received = strom.lib.head.getHead(filesystem)
 			const expected = {
-				name: 'master',
 				commit: null
 			}
 
@@ -45,8 +43,8 @@ describe('tests strom.lib.head module', function () {
 
 	describe('tests setHead', function () {
 		it('succeeds', function () {
-			const branch = strom.lib.branch.createBranch(filesystem)('development')()
-			const received = strom.lib.head.setHead(filesystem)(branch)
+			const branchName = strom.lib.branch.createBranch(filesystem)('development')()
+			const received = strom.lib.head.setHead(filesystem)(branchName)
 			const expected = 'development'
 
 			expect(received).to.equal(expected)
