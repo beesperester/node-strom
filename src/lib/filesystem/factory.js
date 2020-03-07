@@ -12,6 +12,10 @@ export const createFilesystem = (adapter) => {
 			return adapter.remove(path)
 		},
 
+		isFile: (path) => {
+			return adapter.isFile(path)
+		},
+
 		mkdir: (path) => {
 			return adapter.mkdir(path)
 		},
@@ -22,6 +26,10 @@ export const createFilesystem = (adapter) => {
 
 		rmdir: (path) => {
 			return adapter.rmdir(path)
+		},
+
+		isDir: (path) => {
+			return adapter.isDir(path)
 		}
 	}
 }

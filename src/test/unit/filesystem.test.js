@@ -4,6 +4,7 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 import strom from '../../index'
+import { serialize } from '../../lib/utilities'
 
 describe('tests strom.lib.filesystem module', function () {
 	const adapter = strom.lib.filesystem.adapters.memory.createAdapter({})
@@ -15,7 +16,7 @@ describe('tests strom.lib.filesystem module', function () {
 			const expected = {
 				path: {
 					to: {
-						'file.txt': 'hello world'
+						'file.txt': serialize('hello world')
 					}
 				}
 			}
@@ -28,6 +29,12 @@ describe('tests strom.lib.filesystem module', function () {
 			const expected = 'hello world'
 
 			expect(received).to.equal(expected)
+		})
+
+		it('succeeds to isFile', function () {
+			const received = filesystem.isFile('path/to/file.txt')
+
+			expect(received).to.be.true
 		})
 
 		it('succeeds to remove', function () {
@@ -54,6 +61,12 @@ describe('tests strom.lib.filesystem module', function () {
 			}
 
 			expect(received).to.deep.equal(expected)
+		})
+
+		it('succeeds to isDir', function () {
+			const received = filesystem.isDir('path/to/some/dir')
+
+			expect(received).to.be.true
 		})
 
 		it('succeeds to lsdir', function () {

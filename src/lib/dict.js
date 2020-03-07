@@ -1,5 +1,9 @@
 import { filterEmpty } from './utilities'
 
+export class NotFound extends Error {
+
+}
+
 export const deflate = (dict) => (namespace) => {
 	const namespaceParts = namespace.split('/').filter(filterEmpty)
 	const result = {}
@@ -64,12 +68,8 @@ export const getLeaf = (branch) => (path) => {
 	const pathParts = pathToArray('/')(path)
 
 	for (let part of pathParts) {
-		if (branch === undefined) {
-			throw new Error(`Unable to find ${path}`)
-		}
-
-		if (typeof branch !== 'object') {
-			return branch
+		if (branch === undefined || typeof branch !== 'object') {
+			throw new NotFound(`Unable to find ${path}`)
 		}
 
 		branch = branch[part]
