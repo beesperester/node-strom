@@ -1,9 +1,6 @@
 import path from 'path'
-import { createBranch, paths as branchPaths } from './branch'
-
-export const paths = {
-	head: 'refs/head'
-}
+import { createBranch } from './branch'
+import { paths } from './config'
 
 export const createHead = (filesystem) => {
 	try {
@@ -18,7 +15,7 @@ export const createHead = (filesystem) => {
 export const getHead = (filesystem) => {
 	const branchName = filesystem.read(paths.head)
 
-	return filesystem.read(path.join(branchPaths.branches, branchName))
+	return filesystem.read(path.join(paths.branches, branchName))
 }
 
 export const setHead = (filesystem) => (branch) => {

@@ -4,25 +4,33 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 import strom from '../../index'
+import { serialize } from '../../lib/utilities'
 
 describe('tests strom.lib.commit module', function () {
-	const filesystem = strom.lib.filesystem.createFilesystem()
-	const hashPath = strom.lib.hash.pathFromHash(2)(2)
+	const adapter = strom.lib.filesystem.adapters.memory.createAdapter()
+	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
 
-	it('succeeds to createCommit', function () {
-		const received = strom.lib.commit.createCommit()('initial commit')
-		const expected = {
-			parent: null,
-			message: 'initial commit'
-		}
+	describe('tests createCommit', function () {
+		it('succeeds', function () {
+			const received = strom.lib.commit.createCommit(filesystem)(null)('initial commit')
+			const expected = '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e'
 
-		expect(received).to.deep.equal(expected)
+			expect(received).to.equal(expected)
 
-		const serialized = strom.lib.utilities.serialize(received)
-		const hash = strom.lib.hash.hashString(serialized)
+			const expectedFilesystemState = {
+				objects: {
+					'11': {
+						'40': {
+							'17fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e': serialize({
+								parent: null,
+								message: 'initial commit'
+							})
+						}
+					}
+				}
+			}
 
-		strom.lib.dict.addLeaf(filesystem)(hashPath(hash))(serialized)
-
-		console.log(filesystem)
+			expect(adapter.peek()).to.deep.equal(expectedFilesystemState)
+		})
 	})
 })

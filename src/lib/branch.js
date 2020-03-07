@@ -1,8 +1,5 @@
 import path from 'path'
-
-export const paths = {
-	branches: 'branches'
-}
+import { paths } from './config'
 
 export const createBranch = (filesystem) => (name) => (commit) => {
 	const branch = {

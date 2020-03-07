@@ -1,11 +1,5 @@
-import path from 'path'
 import { createHead, setHead, getHead } from './head'
 import { createBranch, getBranches } from './branch'
-
-export const paths = {
-	branches: 'branches',
-	head: 'refs/head'
-}
 
 export const createRepository = (filesystem) => {
 	createHead(filesystem)

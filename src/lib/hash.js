@@ -43,3 +43,5 @@ export const pathFromHash = (length) => (depth) => (hash) => {
 
 	return pathParts.join('/')
 }
+
+export const hashPath = pathFromHash(2)(2)
