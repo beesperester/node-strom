@@ -11,9 +11,7 @@ export const adapter = (storage) => {
     },
 
     read: (path) => {
-      clone = getLeaf(clone)(path)
-
-      return clone
+      return getLeaf(clone)(path)
     },
 
     remove: (path) => {

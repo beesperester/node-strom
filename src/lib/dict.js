@@ -49,47 +49,42 @@ export const addLeaf = (branch) => (path) => (leaf) => {
 }
 
 export const getLeaf = (branch) => (path) => {
-  const pathParts = path.split('/').filter(filterEmpty)
+  const pathParts = pathToArray('/')(path)
 
-  if (pathParts.length > 0) {
-    const head = pathParts[0]
-    const tail = pathParts.slice(1).join('/')
-
-    if (pathParts.length > 1) {
-      if (head in branch) {
-        return getLeaf(branch[head])(tail)
-      }
-    } else {
-      return branch[head]
+  for (let part of pathParts) {
+    if (branch === undefined || typeof branch !== 'object') {
+      return branch
     }
+
+    branch = branch[part]
   }
 
-  throw new Error(`Unable to find ${path}`)
+  return branch
 }
 
 export const removeLeaf = (branch) => (path) => {
   const pathParts = pathToArray('/')(path)
 
-  const head = pathParts[0]
-  const tail = pathParts.slice(1).join('/')
-
-  if (branch[head] === undefined) {
-    return branch
-  }
-
-  if (tail.length > 1) {
+  const removeLeafRecursive = (branch) => (parts) => (index) => {
     const clone = Object.assign({}, branch)
+    let head = parts[index];
 
-    clone[head] = removeLeaf(branch[head])(tail)
+    if (branch[head] === undefined) {
+      return branch
+    }
 
-    return clone
-  } else {
-    const clone = Object.assign({}, branch)
-    
+    if (parts.length - 1 > index) {
+      clone[head] = removeLeafRecursive(branch[head])(parts)(index + 1)
+
+      return clone
+    }
+
     delete clone[head]
 
     return clone
   }
+
+  return removeLeafRecursive(branch)(pathParts)(0)
 }
 
 export const inflate = (dict) => {
