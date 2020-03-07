@@ -3,5 +3,6 @@
 	"editor.formatOnSave": true,
 	"editor.formatOnPaste": true,
 	"editor.formatOnType": true,
-	"eslint.format.enable": true
+	"eslint.format.enable": true,
+	"editor.insertSpaces": false
 }
