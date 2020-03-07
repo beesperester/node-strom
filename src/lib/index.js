@@ -6,6 +6,7 @@ import * as hash from './hash'
 import * as repository from './repository'
 import * as utilities from './utilities'
 import * as head from './head'
+import * as stage from './stage'
 
 export default {
 	branch,
@@ -15,5 +16,6 @@ export default {
 	hash,
 	repository,
 	utilities,
-	head
+	head,
+	stage
 }

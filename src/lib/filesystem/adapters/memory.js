@@ -6,9 +6,7 @@ export const createAdapter = (storage) => {
 	let clone = Object.assign({}, storage)
 
 	return {
-		state: () => {
-			return clone
-		},
+		state: () => Object.assign({}, clone),
 
 		write: (path) => (contents) => {
 			clone = addLeaf(clone)(path)(serialize(contents))
