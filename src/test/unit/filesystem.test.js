@@ -6,7 +6,7 @@ import { describe, it } from 'mocha'
 import strom from '../../index'
 
 describe('tests strom.lib.filesystem module', function () {
-  const adapter = strom.lib.filesystem.adapter({})
+  const adapter = strom.lib.filesystem.adapters.memory.createAdapter({})
   const filesystem = strom.lib.filesystem.createFilesystem(adapter)
 
   describe('tests modifiers', function() {
