@@ -7,6 +7,7 @@ import * as repository from './repository'
 import * as utilities from './utilities'
 import * as head from './head'
 import * as stage from './stage'
+import * as tree from './tree'
 
 export default {
 	branch,
@@ -17,5 +18,6 @@ export default {
 	repository,
 	utilities,
 	head,
-	stage
+	stage,
+	tree
 }

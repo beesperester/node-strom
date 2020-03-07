@@ -45,6 +45,18 @@ export const pathToArray = (delimiter) => (path) => {
 	return String(path).split(delimiter).filter(filterEmpty)
 }
 
+// export const reduce = (branch) => (reducer) => {
+// 	const reduceRecursive = (branch) => (reducer) => {
+// 		for (let key of Object.keys(branch)) {
+// 			if (typeof branch[key] === 'object') {
+// 				reduceRecursive(branch[key])
+// 			}
+// 		}
+// 	}
+
+// 	return reduceRecursive(branch)(reducer)
+// }
+
 export const addLeaf = (branch) => (path) => (leaf) => {
 	const pathParts = pathToArray('/')(path)
 
