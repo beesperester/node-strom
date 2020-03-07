@@ -1,4 +1,4 @@
-import { filterEmpty } from "./utilities"
+import { filterEmpty } from './utilities'
 
 export const deflate = (dict) => (namespace) => {
 	const namespaceParts = namespace.split('/').filter(filterEmpty)
@@ -46,7 +46,7 @@ export const addLeaf = (branch) => (path) => (leaf) => {
 
 	const addLeafRecursive = (branch) => (parts) => (leaf) => (index) => {
 		const clone = Object.assign({}, branch)
-		let head = parts[index];
+		let head = parts[index]
 
 		if (parts.length > index) {
 			clone[head] = addLeafRecursive(branch[head] !== undefined ? branch[head] : {})(parts)(leaf)(index + 1)
@@ -83,7 +83,7 @@ export const removeLeaf = (branch) => (path) => {
 
 	const removeLeafRecursive = (branch) => (parts) => (index) => {
 		const clone = Object.assign({}, branch)
-		let head = parts[index];
+		let head = parts[index]
 
 		if (branch[head] === undefined) {
 			return branch

@@ -25,12 +25,12 @@ export const minimatchFilter = (patterns) => (items) => items.filter((x) => {
 })
 
 export const attempt = (f) => {
-  const context = this
-  try {
-    return S.Right(f.call(context))
-  } catch (exception) {
-    return S.Left(new Error('Unable to attempt function call'))
-  }
+	const context = this
+	try {
+		return S.Right(f.call(context))
+	} catch (exception) {
+		return S.Left(new Error('Unable to attempt function call'))
+	}
 }
 
 export const serialize = (data) => JSON.stringify(data, undefined, 2)

@@ -1,7 +1,7 @@
 import fs from 'fs'
 import crypto from 'crypto'
 
-export const hashString = (string) => crypto.createHash('sha256').update(string).digest('hex');
+export const hashString = (string) => crypto.createHash('sha256').update(string).digest('hex')
 
 export const hashFile = (chunkSize) => (file) => {
 	const hash = crypto.createHash('sha256')
@@ -28,18 +28,18 @@ export const hashFile = (chunkSize) => (file) => {
 }
 
 export const pathFromHash = (length) => (depth) => (hash) => {
-  const pathParts = [];
-  
-  if (length * depth < hash.length) {
-    for (let i = 0; i < depth; i++) {
-      const start = i * length;
-      const end = start + length;
+	const pathParts = []
 
-      pathParts.push(hash.slice(start, end));
-    }
+	if (length * depth < hash.length) {
+		for (let i = 0; i < depth; i++) {
+			const start = i * length
+			const end = start + length
 
-    pathParts.push(hash.slice(length * depth));
-  }
+			pathParts.push(hash.slice(start, end))
+		}
 
-  return pathParts.join('/');
-};
+		pathParts.push(hash.slice(length * depth))
+	}
+
+	return pathParts.join('/')
+}

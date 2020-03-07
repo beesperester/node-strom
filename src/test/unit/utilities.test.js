@@ -6,5 +6,5 @@ import { describe, it } from 'mocha'
 import strom from '../../index'
 
 describe('tests strom.lib.utilities module', function () {
-	
+
 })

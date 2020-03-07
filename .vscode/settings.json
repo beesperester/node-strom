@@ -3,6 +3,5 @@
 	"editor.formatOnSave": true,
 	"editor.formatOnPaste": true,
 	"editor.formatOnType": true,
-	"eslint.alwaysShowStatus": true
-	
+	"eslint.format.enable": true
 }
