@@ -27,11 +27,11 @@ export const adapter = (storage) => {
     },
 
     lsdir: (path) => {
-      return Object.keys(getLeaf(storage)(path))
+      return Object.keys(getLeaf(clone)(path))
     },
 
     rmdir: (path) => {
-      clone = removeLeaf(storage)(path)
+      clone = removeLeaf(clone)(path)
 
       return clone
     }
