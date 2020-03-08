@@ -4,19 +4,32 @@ import { expect } from 'chai'
 import { describe, it } from 'mocha'
 
 import strom from '../../index'
+import { serialize } from '../../lib/utilities'
 
 describe('tests repository branch commit workflow', function () {
-	const adapter = strom.lib.filesystem.adapters.memory.createAdapter({})
+	const storage = {
+		'setup-cinema4d': {
+			'model_main.c4d': serialize('contents of model_main.c4d'),
+			tex: {
+				'albedo.jpg': serialize('contents of albedo.jpg')
+			}
+		},
+		'setup-zbrush': {
+			'sculpt_main.ztl': serialize('contents of sculpt_main.ztl')
+		}
+	}
+	const adapter = strom.lib.filesystem.adapters.memory.createAdapter(storage)
 	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
-	const hashPath = strom.lib.hash.pathFromHash(2)(2)
-	const repository = strom.lib.repository.createRepository(filesystem)
 
-	it('succeeds to createCommit', function () {
-		const master = strom.lib.branch.createBranch('master')()
-		const masterPath = 'refs/branches/master'
+	const repositoryAdapter = strom.lib.filesystem.adapters.memory.createAdapter()
+	const repositoryFilesystem = strom.lib.filesystem.createFilesystem(repositoryAdapter)
 
-		strom.lib.dict.addLeaf(filesystem)(masterPath)(strom.lib.utilities.serialize(master))
+	const repository = strom.lib.repository.createRepository(repositoryFilesystem)
 
-		// strom.lib.repository.checkout('master')
+	describe('tests workflow', function () {
+		it('succeeds', function () {
+			const received = filesystem.walk('')
+			const expected = {}
+		})
 	})
 })

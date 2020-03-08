@@ -1,12 +1,16 @@
 import * as errors from '../errors'
-import { addLeaf, getLeaf, removeLeaf } from '../../dict'
+import { addLeaf, getLeaf, removeLeaf, deflate } from '../../dict'
 import { serialize, deserialize } from '../../utilities'
 
 export const createAdapter = (storage) => {
-	let clone = Object.assign({}, storage)
+	let clone = deserialize(serialize(storage || {}))
 
 	return {
 		state: () => Object.assign({}, clone),
+
+		walk: (path) => {
+			return Object.keys(deflate(getLeaf(clone)(path))(''))
+		},
 
 		write: (path) => (contents) => {
 			clone = addLeaf(clone)(path)(serialize(contents))

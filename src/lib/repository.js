@@ -3,10 +3,6 @@ import { createBranch, getBranches } from './branch'
 
 export const createRepository = (filesystem) => {
 	createHead(filesystem)
-
-	return {
-		filesystem
-	}
 }
 
 export const checkout = (filesystem) => (name) => {

@@ -1,5 +1,9 @@
 export const createFilesystem = (adapter) => {
 	return {
+		walk: (path) => {
+			return adapter.walk(path)
+		},
+
 		write: (path) => (contents) => {
 			return adapter.write(path)(contents)
 		},
