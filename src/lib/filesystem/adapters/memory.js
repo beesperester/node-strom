@@ -1,9 +1,9 @@
 import * as errors from '../errors'
-import { addLeaf, getLeaf, removeLeaf, deflate, copyDeep } from '../../dict'
-import { serialize, deserialize } from '../../utilities/utilities'
+import { addLeaf, getLeaf, removeLeaf, deflate, copyDeep } from '../../utilities/map'
+import { hashString } from '../../utilities/hashing'
 
 export const createAdapter = (storage) => {
-	let clone = deserialize(serialize(storage || {}))
+	let clone = copyDeep(storage)
 
 	return {
 		state: () => copyDeep(clone),
@@ -13,14 +13,14 @@ export const createAdapter = (storage) => {
 		},
 
 		write: (path) => (contents) => {
-			clone = addLeaf(clone)(path)(serialize(contents))
+			clone = addLeaf(clone)(path)(contents)
 
 			return clone
 		},
 
 		read: (path) => {
 			try {
-				return deserialize(getLeaf(clone)(path))
+				return getLeaf(clone)(path)
 			} catch (e) {
 				throw new errors.FileNotFound(path)
 			}
@@ -30,6 +30,10 @@ export const createAdapter = (storage) => {
 			clone = removeLeaf(clone)(path)
 
 			return clone
+		},
+
+		hash: (path) => {
+			return hashString(getLeaf(clone)(path))
 		},
 
 		isFile: (path) => {

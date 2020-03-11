@@ -2,6 +2,8 @@ import adapters from './adapters'
 
 export const createFilesystem = (adapter) => {
 	return {
+		adapter,
+
 		walk: (path) => {
 			return adapter.walk(path)
 		},
@@ -16,6 +18,10 @@ export const createFilesystem = (adapter) => {
 
 		remove: (path) => {
 			return adapter.remove(path)
+		},
+
+		hash: (path) => {
+			return adapter.hash(path)
 		},
 
 		isFile: (path) => {

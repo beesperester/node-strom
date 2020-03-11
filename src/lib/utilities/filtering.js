@@ -1,13 +1,15 @@
 import minimatch from 'minimatch'
 
-export const filterEmptyString = (value) => value && value.trim() !== ''
+export const filterEmptyString = (value) => value && String(value).trim() !== ''
 
-export const filterMinimatchString = (patterns) => (items) => items.filter((x) => {
+export const filterEqual = (initialValue) => (value) => value && initialValue === value
+
+export const filterMinimatchString = (patterns) => (value) => {
 	const minimatchSettings = {
 		dot: true
 	}
 
-	return !patterns.map((y) => {
-		return minimatch(x, y, minimatchSettings)
+	return !patterns.map((pattern) => {
+		return minimatch(value, pattern, minimatchSettings)
 	}).includes(false)
-})
+}
