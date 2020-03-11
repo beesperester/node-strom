@@ -1,32 +1,30 @@
-import { filterEmpty } from './utilities'
+import { filterEmptyString } from './filtering'
 
-export class NotFound extends Error {
+export class NotFound extends Error { }
 
-}
+export const copy = (map) => Object.assign({}, map)
 
-export const copy = (dict) => Object.assign({}, dict)
+export const copyDeep = (map) => JSON.parse(JSON.stringify(map))
 
-export const copyDeep = (dict) => JSON.parse(JSON.stringify(dict))
-
-export const deflate = (dict) => (namespace) => {
-	const namespaceParts = namespace.split('/').filter(filterEmpty)
+export const deflate = (map) => (namespace) => {
+	const namespaceParts = namespace.split('/').filter(filterEmptyString)
 	const result = {}
 
-	for (let key of Object.keys(dict)) {
+	for (let key of Object.keys(map)) {
 		const currentNamespaceParts = [...namespaceParts, key]
 		const currentNamespace = currentNamespaceParts.join('/')
-		const next = dict[key]
+		const next = map[key]
 
 		if (typeof next === 'object') {
 			Object.assign(
 				result,
-				deflate(dict[key])(currentNamespace)
+				deflate(map[key])(currentNamespace)
 			)
 		} else {
 			Object.assign(
 				result,
 				{
-					[currentNamespace]: dict[key]
+					[currentNamespace]: map[key]
 				}
 			)
 		}
@@ -35,31 +33,19 @@ export const deflate = (dict) => (namespace) => {
 	return result
 }
 
-export const inflate = (dict) => {
+export const inflate = (map) => {
 	let result = {}
 
-	for (let key of Object.keys(dict)) {
-		result = addLeaf(result)(key)(dict[key])
+	for (let key of Object.keys(map)) {
+		result = addLeaf(result)(key)(map[key])
 	}
 
 	return result
 }
 
 export const pathToArray = (delimiter) => (path) => {
-	return String(path).split(delimiter).filter(filterEmpty)
+	return String(path).split(delimiter).filter(filterEmptyString)
 }
-
-// export const reduce = (branch) => (reducer) => {
-// 	const reduceRecursive = (branch) => (reducer) => {
-// 		for (let key of Object.keys(branch)) {
-// 			if (typeof branch[key] === 'object') {
-// 				reduceRecursive(branch[key])
-// 			}
-// 		}
-// 	}
-
-// 	return reduceRecursive(branch)(reducer)
-// }
 
 export const addLeaf = (branch) => (path) => (leaf) => {
 	const pathParts = pathToArray('/')(path)

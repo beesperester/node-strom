@@ -1,6 +1,6 @@
 import * as errors from '../errors'
 import { addLeaf, getLeaf, removeLeaf, deflate, copyDeep } from '../../dict'
-import { serialize, deserialize } from '../../utilities'
+import { serialize, deserialize } from '../../utilities/utilities'
 
 export const createAdapter = (storage) => {
 	let clone = deserialize(serialize(storage || {}))
