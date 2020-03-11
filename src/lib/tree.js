@@ -4,11 +4,16 @@ import { inflate } from './dict'
 import { serialize } from './utilities'
 import { paths } from './config'
 
-export const createTree = (filesystem) => (stage) => {
+export const createTree = (filesystem) => (repositoryFilesystem) => (stage) => {
 	const fileHashes = {}
 
-	stage.state().forEach((filePath) => {
-		fileHashes[filePath] = hashString(filePath)
+	stage.state().forEach((file) => {
+		const fileHash = hashString(serialize(filesystem.read(file)))
+
+		fileHashes[file] = fileHash
+
+		// copy file to repository filesystem
+		repositoryFilesystem.write(path.join(paths.objects, hashPath(fileHash)))(filesystem.read(file))
 	})
 
 	const tree = inflate(fileHashes)
@@ -26,7 +31,7 @@ export const createTree = (filesystem) => (stage) => {
 
 		const hash = hashString(serialize(tree))
 
-		filesystem.write(path.join(paths.objects, hashPath(hash)))(tree)
+		repositoryFilesystem.write(path.join(paths.objects, hashPath(hash)))(tree)
 
 		return hash
 	}

@@ -4,6 +4,10 @@ export class NotFound extends Error {
 
 }
 
+export const copy = (dict) => Object.assign({}, dict)
+
+export const copyDeep = (dict) => JSON.parse(JSON.stringify(dict))
+
 export const deflate = (dict) => (namespace) => {
 	const namespaceParts = namespace.split('/').filter(filterEmpty)
 	const result = {}

@@ -18,3 +18,14 @@ export const getBranches = (filesystem) => {
 export const getBranch = (filesystem) => (name) => {
 	return filesystem.read(path.join(paths.branches, name))
 }
+
+export const setBranch = (filesystem) => (name) => (commit) => {
+	const branch = {
+		...getBranch(filesystem)(name),
+		commit
+	}
+
+	filesystem.write(path.join(paths.branches, name))(branch)
+
+	return name
+}

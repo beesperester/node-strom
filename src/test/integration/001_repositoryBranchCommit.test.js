@@ -28,7 +28,19 @@ describe('tests repository branch commit workflow', function () {
 
 	describe('tests workflow', function () {
 		it('succeeds', function () {
-			const received = filesystem.walk('')
+			const initialFiles = filesystem.walk('')
+			const stage = strom.lib.stage.createStage()
+
+			initialFiles.forEach((file) => stage.add(file))
+
+			const initialCommitTreeHash = strom.lib.tree.createTree(filesystem)(repositoryFilesystem)(stage)
+			const initialCommitHash = strom.lib.commit.createCommit(filesystem)(null)(initialCommitTreeHash)('initial commit')
+
+			const branchName = repositoryFilesystem.read('refs/head')
+
+			strom.lib.branch.setBranch(repositoryFilesystem)(branchName)(initialCommitHash)
+
+			const received = repositoryAdapter.state()
 			const expected = {}
 		})
 	})

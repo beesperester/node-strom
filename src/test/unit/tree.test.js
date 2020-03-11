@@ -6,7 +6,7 @@ import { describe, it } from 'mocha'
 import strom from '../../index'
 import { serialize } from '../../lib/utilities'
 
-describe('tests strom.lib.tree module', function () {
+describe.skip('tests strom.lib.tree module', function () {
 	const adapter = strom.lib.filesystem.adapters.memory.createAdapter()
 	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
 	const stage = strom.lib.stage.createStage()
