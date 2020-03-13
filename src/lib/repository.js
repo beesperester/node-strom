@@ -1,4 +1,4 @@
-import * as branch from './branch'
+import { createBundle as createBranchBundle, getBranchesDirectory, getBranchByReference } from './branch'
 import * as object from './object'
 import * as reference from './reference'
 import * as stage from './stage'
@@ -11,6 +11,8 @@ export const getRepositoryDirectory = () => {
 export const createRepository = (filesystem) => {
 	const currentStage = stage.createStage(filesystem)
 
+	const branch = createBranchBundle(filesystem)
+
 	return {
 		stage: currentStage,
 
@@ -19,7 +21,7 @@ export const createRepository = (filesystem) => {
 			object.initObjects(filesystem)
 
 			// initialize branches if missing
-			branch.initBranches(filesystem)
+			branch.init()
 
 			// initialize refs if missing
 			reference.initReferences(filesystem)
@@ -35,8 +37,8 @@ export const createRepository = (filesystem) => {
 			let commit
 
 			// get previous commit by branch reference
-			if (head.ref.startsWith(branch.getBranchesDirectory())) {
-				const referencedBranch = branch.getBranchByReference(filesystem)(head.ref)
+			if (head.ref.startsWith(getBranchesDirectory())) {
+				const referencedBranch = getBranchByReference(filesystem)(head.ref)
 
 				if (referencedBranch.commit) {
 					commit = commit.getCommit(filesystem)(referencedBranch.commit)

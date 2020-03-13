@@ -58,3 +58,17 @@ export const createBranch = (filesystem) => (name) => (commit) => {
 
 	return name
 }
+
+export const createBundle = (filesystem) => {
+	return {
+		init: () => initBranches(filesystem),
+
+		getAll: () => getBranches(filesystem),
+
+		get: getBranch(filesystem),
+
+		create: createBranch(filesystem),
+
+		getDirectory: getBranchesDirectory
+	}
+}
