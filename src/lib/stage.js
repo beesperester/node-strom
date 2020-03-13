@@ -13,8 +13,6 @@ export const createStage = (filesystem) => {
 
 		addFile: (file) => {
 			stage = addFile(stage)(file)
-
-			return stage
 		},
 
 		addFiles: (files) => {
@@ -27,8 +25,6 @@ export const createStage = (filesystem) => {
 			stage = [
 				...stage.filter((x) => x !== file)
 			]
-
-			return stage
 		},
 
 		includes: (file) => {
