@@ -1,6 +1,8 @@
 import path from 'path'
+import { getObject } from './object'
 import { getRepositoryDirectory } from './repository'
 import { hashPath, hashString } from './utilities/hashing'
+import { deflate } from './utilities/map'
 import { deserialize, serialize } from './utilities/serialization'
 
 export const getCommitsDirectory = () => {
@@ -31,7 +33,31 @@ export const setCommit = (filesystem) => (id) => (commit) => {
 
 export const getCommitFiles = (filesystem) => (id) => {
 	// get all files from a commit as path: hash key value pairs
-	return {}
+	if (id === null) {
+		return {}
+	}
+
+	const commit = getCommit(filesystem)(id)
+
+	const unpackTree = (branch) => {
+		const tree = {}
+
+		Object.keys(branch).forEach((object) => {
+			if (branch[object].startsWith('blob')) {
+				tree[object] = path.basename(branch[object])
+			} else if (branch[object].startsWith('tree')) {
+				tree[object] = unpackTree(getObject(filesystem)(path.basename(branch[object])))
+			}
+		})
+
+		return tree
+	}
+
+	const tree = commit.tree
+		? unpackTree(getObject(filesystem)(commit.tree))
+		: {}
+
+	return deflate(tree)
 }
 
 export const copy = (filesystem) => (file) => (hash) => {
