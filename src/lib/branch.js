@@ -38,10 +38,10 @@ export const getBranch = (filesystem) => (name) => {
 	)))
 }
 
-export const getBranchByReference = (filesystem) => (reference) => {
+export const getBranchByReference = (filesystem) => (referencePath) => {
 	return deserialize(filesystem.read(path.join(
 		getRepositoryDirectory(),
-		reference
+		referencePath
 	)))
 }
 

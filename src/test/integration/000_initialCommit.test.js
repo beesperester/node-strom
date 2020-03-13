@@ -29,6 +29,7 @@ describe('tests repository branch commit workflow', function () {
 			 * creates neccessary directories and files if missing,
 			 * creates master branch if missing
 			 * .strom
+			 * 	|- stage
 			 * 	|- objects
 			 * 	|- refs
 			 * 	|	|- head
@@ -42,6 +43,7 @@ describe('tests repository branch commit workflow', function () {
 				...storage,
 
 				'.strom': {
+					stage: serialize([]),
 					branches: {
 						master: serialize({
 							commit: null
@@ -50,7 +52,7 @@ describe('tests repository branch commit workflow', function () {
 					objects: {},
 					refs: {
 						head: serialize({
-							ref: 'branches/master'
+							reference: 'branches/master'
 						})
 					}
 				}
@@ -79,7 +81,6 @@ describe('tests repository branch commit workflow', function () {
 			expect(receivedStatus).to.deep.equal(expectedStatus)
 		})
 	})
-
 
 	describe('repository.stage.addFiles', function () {
 		it('succeeds', function () {

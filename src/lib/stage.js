@@ -1,34 +1,83 @@
-export const addFile = (stage) => (file) => {
-	return stage.includes(file) ? stage : [
-		...stage,
+import path from 'path'
+import { getRepositoryDirectory } from './repository'
+import { serialize, deserialize } from './utilities/serialization'
+
+export const addFile = (filesystem) => (file) => {
+	const state = getStageState(filesystem)
+
+	const nextState = state.includes(file) ? state : [
+		...state,
 		file
 	]
+
+	setStageState(filesystem)(nextState)
 }
 
-export const createStage = (filesystem) => {
-	let stage = []
+export const removeFile = (filesystem) => (file) => {
+	const state = getStageState(filesystem)
 
+	const nextState = [
+		...state.filter((x) => x !== file)
+	]
+
+	setStageState(filesystem)(nextState)
+}
+
+export const getStageState = (filesystem) => {
+	return deserialize(
+		filesystem.read(
+			path.join(
+				getRepositoryDirectory(),
+				getStageFile()
+			)
+		)
+	)
+}
+
+export const setStageState = (filesystem) => (state) => {
+	filesystem.write(
+		path.join(
+			getRepositoryDirectory(),
+			getStageFile()
+		)
+	)(serialize(state))
+}
+
+export const getStageFile = () => {
+	return 'stage'
+}
+
+export const stageIncludes = (filesystem) => (file) => {
+	return getStageState(filesystem).includes(file)
+}
+
+export const initStage = (filesystem) => {
+	const stageFile = path.join(
+		getRepositoryDirectory(),
+		getStageFile()
+	)
+
+	if (!filesystem.isFile(stageFile)) {
+		setStageState(filesystem)([])
+	}
+}
+
+export const createBundle = (filesystem) => {
 	return {
-		state: () => stage,
+		init: () => initStage(filesystem),
 
-		addFile: (file) => {
-			stage = addFile(stage)(file)
-		},
+		state: () => getStageState(filesystem),
+
+		addFile: addFile(filesystem),
 
 		addFiles: (files) => {
 			files.forEach((file) => {
-				stage = addFile(stage)(file)
+				addFile(filesystem)(file)
 			})
 		},
 
-		remove: (file) => {
-			stage = [
-				...stage.filter((x) => x !== file)
-			]
-		},
+		remove: removeFile(filesystem),
 
-		includes: (file) => {
-			return stage.includes(file)
-		}
+		includes: stageIncludes(filesystem)
 	}
 }

@@ -1,30 +1,35 @@
-import { createBundle as createBranchBundle, getBranchesDirectory, getBranchByReference } from './branch'
-import * as object from './object'
-import * as reference from './reference'
-import * as stage from './stage'
-import { filterEqual, filterMinimatchString } from './utilities/filtering'
+import { createBundle as createBranchBundle } from './branch'
+import { createBundle as createObjectBundle } from './object'
+import { createBundle as createReferenceBundle } from './reference'
+import { createBundle as createStageBundle } from './stage'
+import { filterMinimatchString } from './utilities/filtering'
 
 export const getRepositoryDirectory = () => {
 	return '.strom'
 }
 
 export const createRepository = (filesystem) => {
-	const currentStage = stage.createStage(filesystem)
+	const stage = createStageBundle(filesystem)
 
+	const object = createObjectBundle(filesystem)
 	const branch = createBranchBundle(filesystem)
+	const reference = createReferenceBundle(filesystem)
 
 	return {
-		stage: currentStage,
+		stage,
 
 		init: () => {
 			// initialize objects structure if missing
-			object.initObjects(filesystem)
+			object.init()
 
 			// initialize branches if missing
 			branch.init()
 
 			// initialize refs if missing
-			reference.initReferences(filesystem)
+			reference.init()
+
+			// initialize stage if missing
+			stage.init()
 		},
 
 		status: () => {
@@ -33,19 +38,11 @@ export const createRepository = (filesystem) => {
 			let filesPreviousCommit = {}
 
 			// get head reference
-			const head = reference.getHead(filesystem)
-			let commit
+			const head = reference.getHead()
 
-			// get previous commit by branch reference
-			if (head.ref.startsWith(getBranchesDirectory())) {
-				const referencedBranch = getBranchByReference(filesystem)(head.ref)
-
-				if (referencedBranch.commit) {
-					commit = commit.getCommit(filesystem)(referencedBranch.commit)
-				}
-			}
-
-			if (commit) {
+			try {
+				const commit = reference.resolve(head)
+			} catch (e) {
 				//
 			}
 

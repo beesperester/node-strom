@@ -1,14 +1,11 @@
 import path from 'path'
-import { getBranchesDirectory } from './branch'
+import { getBranchByReference, getBranchesDirectory } from './branch'
+import { getCommit, getCommitsDirectory } from './commit'
 import { getRepositoryDirectory } from './repository'
 import { deserialize, serialize } from './utilities/serialization'
 
 export const getReferencesDirectory = () => {
 	return 'refs'
-}
-
-export const getHeadFile = () => {
-	return path.join(getReferencesDirectory(), 'head')
 }
 
 export const initReferences = (filesystem) => {
@@ -22,36 +19,78 @@ export const initReferences = (filesystem) => {
 	}
 
 	try {
-		getHead(filesystem)
+		getReference(filesystem)('head')
 	} catch (e) {
-		createHead(filesystem)(path.join(
-			getBranchesDirectory(),
-			'master'
-		))
+		setReference(filesystem)('head')(
+			path.join(
+				getBranchesDirectory(),
+				'master'
+			)
+		)
 	}
 }
 
-export const getHead = (filesystem) => {
-	return deserialize(filesystem.read(path.join(
-		getRepositoryDirectory(),
-		getHeadFile()
-	)))
+export const getReferences = (filesystem) => {
+	return filesystem.lsdir(
+		path.join(
+			getRepositoryDirectory(),
+			getReferencesDirectory()
+		)
+	)
 }
 
-export const createHead = (filesystem) => (ref) => {
-	const head = {
-		ref
+export const getReference = (filesystem) => (name) => {
+	return deserialize(
+		filesystem.read(
+			path.join(
+				getRepositoryDirectory(),
+				getReferencesDirectory(),
+				name
+			)
+		)
+	)
+}
+
+export const setReference = (filesystem) => (name) => (referencePath) => {
+	const contents = {
+		reference: referencePath
 	}
 
-	filesystem.write(path.join(
-		getRepositoryDirectory(),
-		getHeadFile()
-	))(serialize(head))
+	filesystem.write(
+		path.join(
+			getRepositoryDirectory(),
+			getReferencesDirectory(),
+			name
+		)
+	)(serialize(contents))
 }
 
-export const get = (filesystem) => (reference) => {
-	return deserialize(filesystem.read(path.join(
-		getRepositoryDirectory(),
-		reference.ref
-	)))
+export const resolve = (filesystem) => (reference) => {
+	if (reference.reference.startsWith(getBranchesDirectory())) {
+		// reference points to a branch
+		const branch = getBranchByReference(reference.reference)
+
+		if (branch.commit) {
+			return getCommit(filesystem)(branch.commit)
+		}
+	} else if (reference.reference.startsWith(getCommitsDirectory())) {
+		// reference points to a commit
+		return getCommit(filesystem)(reference.reference)
+	}
+
+	throw new Error('Unable to resolve reference')
+}
+
+export const createBundle = (filesystem) => {
+	return {
+		init: () => initReferences(filesystem),
+
+		getAll: () => getReferences(filesystem),
+
+		get: getReference(filesystem),
+
+		getHead: () => getReference(filesystem)('head'),
+
+		resolve: resolve(filesystem)
+	}
 }

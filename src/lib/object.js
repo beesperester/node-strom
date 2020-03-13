@@ -12,3 +12,11 @@ export const initObjects = (filesystem) => {
 		filesystem.mkdir(objectsDirectory)
 	}
 }
+
+export const createBundle = (filesystem) => {
+	return {
+		init: () => initObjects(filesystem),
+
+		getDirectory: getObjectsDirectory
+	}
+}
