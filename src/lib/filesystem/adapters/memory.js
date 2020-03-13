@@ -8,37 +8,37 @@ export const createAdapter = (storage) => {
 	return {
 		state: () => copyDeep(clone),
 
-		walk: (path) => {
-			return Object.keys(deflate(getLeaf(clone)(path))(''))
+		walk: (file) => {
+			return Object.keys(deflate(getLeaf(clone)(file))(''))
 		},
 
-		write: (path) => (contents) => {
-			clone = addLeaf(clone)(path)(contents)
-
-			return clone
+		write: (file) => (contents) => {
+			clone = addLeaf(clone)(file)(contents)
 		},
 
-		read: (path) => {
+		read: (file) => {
 			try {
-				return getLeaf(clone)(path)
+				return getLeaf(clone)(file)
 			} catch (e) {
-				throw new errors.FileNotFound(path)
+				throw new errors.FileNotFound(file)
 			}
 		},
 
-		remove: (path) => {
-			clone = removeLeaf(clone)(path)
-
-			return clone
+		copy: (file) => (newFile) => {
+			clone = addLeaf(clone)(newFile)(getLeaf(clone)(file))
 		},
 
-		hash: (path) => {
-			return hashString(getLeaf(clone)(path))
+		remove: (file) => {
+			clone = removeLeaf(clone)(file)
 		},
 
-		isFile: (path) => {
+		hash: (file) => {
+			return hashString(getLeaf(clone)(file))
+		},
+
+		isFile: (file) => {
 			try {
-				return typeof getLeaf(clone)(path) === 'string'
+				return typeof getLeaf(clone)(file) === 'string'
 			} catch (e) {
 				//
 			}
@@ -46,29 +46,25 @@ export const createAdapter = (storage) => {
 			return false
 		},
 
-		mkdir: (path) => {
-			clone = addLeaf(clone)(path)({})
-
-			return clone
+		mkdir: (directory) => {
+			clone = addLeaf(clone)(directory)({})
 		},
 
-		lsdir: (path) => {
+		lsdir: (directory) => {
 			try {
-				return Object.keys(getLeaf(clone)(path))
+				return Object.keys(getLeaf(clone)(directory))
 			} catch (e) {
-				throw new errors.DirNotFound(path)
+				throw new errors.DirNotFound(directory)
 			}
 		},
 
-		rmdir: (path) => {
-			clone = removeLeaf(clone)(path)
-
-			return clone
+		rmdir: (directory) => {
+			clone = removeLeaf(clone)(directory)
 		},
 
-		isDir: (path) => {
+		isDir: (directory) => {
 			try {
-				return typeof getLeaf(clone)(path) === 'object'
+				return typeof getLeaf(clone)(directory) === 'object'
 			} catch (e) {
 				//
 			}

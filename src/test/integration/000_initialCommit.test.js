@@ -43,7 +43,10 @@ describe('tests repository branch commit workflow', function () {
 				...storage,
 
 				'.strom': {
-					stage: serialize([]),
+					stage: serialize({
+						add: [],
+						remove: []
+					}),
 					branches: {
 						master: serialize({
 							commit: null
@@ -92,9 +95,12 @@ describe('tests repository branch commit workflow', function () {
 			])
 
 			const receivedStage = repository.stage.state()
-			const expectedStage = [
-				'setup-cinema4d/model_main.c4d'
-			]
+			const expectedStage = {
+				add: [
+					'setup-cinema4d/model_main.c4d'
+				],
+				remove: []
+			}
 
 			expect(receivedStage).to.deep.equal(expectedStage)
 		})

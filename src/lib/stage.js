@@ -5,10 +5,15 @@ import { serialize, deserialize } from './utilities/serialization'
 export const addFile = (filesystem) => (file) => {
 	const state = getStageState(filesystem)
 
-	const nextState = state.includes(file) ? state : [
-		...state,
-		file
-	]
+	const nextState = state.add.includes(file)
+		? state
+		: {
+			add: [
+				...state.add,
+				file
+			],
+			remove: state.remove
+		}
 
 	setStageState(filesystem)(nextState)
 }
@@ -16,9 +21,14 @@ export const addFile = (filesystem) => (file) => {
 export const removeFile = (filesystem) => (file) => {
 	const state = getStageState(filesystem)
 
-	const nextState = [
-		...state.filter((x) => x !== file)
-	]
+	const nextState = state.remove.includes(file)
+		? {
+			remove: [
+				...state.remove.filter((x) => x !== file)
+			],
+			add: state.add
+		}
+		: state
 
 	setStageState(filesystem)(nextState)
 }
@@ -58,7 +68,10 @@ export const initStage = (filesystem) => {
 	)
 
 	if (!filesystem.isFile(stageFile)) {
-		setStageState(filesystem)([])
+		setStageState(filesystem)({
+			add: [],
+			remove: []
+		})
 	}
 }
 

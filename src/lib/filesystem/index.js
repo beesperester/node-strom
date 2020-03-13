@@ -4,44 +4,48 @@ export const createFilesystem = (adapter) => {
 	return {
 		adapter,
 
-		walk: (path) => {
-			return adapter.walk(path)
+		walk: (file) => {
+			return adapter.walk(file)
 		},
 
-		write: (path) => (contents) => {
-			return adapter.write(path)(contents)
+		write: (file) => (contents) => {
+			return adapter.write(file)(contents)
 		},
 
-		read: (path) => {
-			return adapter.read(path)
+		read: (file) => {
+			return adapter.read(file)
 		},
 
-		remove: (path) => {
-			return adapter.remove(path)
+		copy: (file) => (newFile) => {
+			return adapter.copy(file)(newFile)
 		},
 
-		hash: (path) => {
-			return adapter.hash(path)
+		remove: (file) => {
+			return adapter.remove(file)
 		},
 
-		isFile: (path) => {
-			return adapter.isFile(path)
+		hash: (file) => {
+			return adapter.hash(file)
 		},
 
-		mkdir: (path) => {
-			return adapter.mkdir(path)
+		isFile: (file) => {
+			return adapter.isFile(file)
 		},
 
-		lsdir: (path) => {
-			return adapter.lsdir(path)
+		mkdir: (directory) => {
+			return adapter.mkdir(directory)
 		},
 
-		rmdir: (path) => {
-			return adapter.rmdir(path)
+		lsdir: (directory) => {
+			return adapter.lsdir(directory)
 		},
 
-		isDir: (path) => {
-			return adapter.isDir(path)
+		rmdir: (directory) => {
+			return adapter.rmdir(directory)
+		},
+
+		isDir: (directory) => {
+			return adapter.isDir(directory)
 		}
 	}
 }
