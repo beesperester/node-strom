@@ -1,5 +1,5 @@
 import path from 'path'
-import { getBranchByReference, getBranchesDirectory } from './branch'
+import { getBranch, getBranchesDirectory, setBranch } from './branch'
 import { getCommit, getCommitsDirectory } from './commit'
 import { getRepositoryDirectory } from './repository'
 import { deserialize, serialize } from './utilities/serialization'
@@ -65,17 +65,32 @@ export const setReference = (filesystem) => (name) => (referencePath) => {
 	)(serialize(contents))
 }
 
+export const updateReference = (filesystem) => (name) => (referencePath) => {
+	const reference = getReference(filesystem)(name)
+
+	if (reference.reference.startsWith(getBranchesDirectory())) {
+		// reference points to a branch
+		// update branch
+		setBranch(filesystem)(path.basename(reference.reference))(referencePath)
+	} else if (reference.reference.startsWith(getCommitsDirectory())) {
+		// reference points to a commit
+		// update reference
+		setReference(filesystem)(name)(
+			path.join(
+				getCommitsDirectory(),
+				referencePath
+			)
+		)
+	}
+}
+
 export const resolve = (filesystem) => (reference) => {
 	if (reference.reference.startsWith(getBranchesDirectory())) {
 		// reference points to a branch
-		const branch = getBranchByReference(reference.reference)
-
-		if (branch.commit) {
-			return getCommit(filesystem)(branch.commit)
-		}
+		return getBranch(filesystem)(path.basename(reference.reference)).commit
 	} else if (reference.reference.startsWith(getCommitsDirectory())) {
 		// reference points to a commit
-		return getCommit(filesystem)(reference.reference)
+		return path.basename(reference.reference)
 	}
 
 	throw new Error('Unable to resolve reference')
@@ -91,6 +106,10 @@ export const createBundle = (filesystem) => {
 
 		getHead: () => getReference(filesystem)('head'),
 
-		resolve: resolve(filesystem)
+		resolve: resolve(filesystem),
+
+		update: updateReference(filesystem),
+
+		updateHead: updateReference(filesystem)('head')
 	}
 }

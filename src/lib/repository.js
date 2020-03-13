@@ -1,3 +1,4 @@
+import path from 'path'
 import { createBundle as createBranchBundle } from './branch'
 import { createBundle as createCommitBundle } from './commit'
 import { createBundle as createObjectBundle } from './object'
@@ -28,23 +29,20 @@ export const getWorkingDirFiles = (filesystem) => {
 	return workingDirFilesHashed
 }
 
-export const getPreviousCommitFiles = (filesystem) => {
+export const getPreviousCommit = (filesystem) => {
 	const referenceBundle = createReferenceBundle(filesystem)
-	const commitBundle = createCommitBundle(filesystem)
 
-	let filesPreviousCommit = {}
-
-	// get files from previous commit
+	// get previous commit from head
 	try {
 		const head = referenceBundle.getHead()
-		const commit = referenceBundle.resolve(head)
+		const id = referenceBundle.resolve(head)
 
-		filesPreviousCommit = commitBundle.getFiles(commit)
+		return id
 	} catch (e) {
 		//
 	}
 
-	return filesPreviousCommit
+	return null
 }
 
 export const diffFiles = (filesA) => (filesB) => {
@@ -80,8 +78,10 @@ export const diffFiles = (filesA) => (filesB) => {
 
 export const getRepositoryStatus = (filesystem) => {
 	// get all files from working dir, except from repository directory
+	const commitBundle = createCommitBundle(filesystem)
 	const filesWorkingdir = getWorkingDirFiles(filesystem)
-	const filesPreviousCommit = getPreviousCommitFiles(filesystem)
+	const previousCommit = getPreviousCommit(filesystem)
+	const filesPreviousCommit = commitBundle.getFiles(previousCommit)
 
 	return diffFiles(filesWorkingdir)(filesPreviousCommit)
 }
@@ -114,7 +114,9 @@ export const createRepository = (filesystem) => {
 		status: () => getRepositoryStatus(filesystem),
 
 		commit: (message) => {
-			const filesPreviousCommit = getPreviousCommitFiles(filesystem)
+			const head = referenceBundle.getHead()
+			const previousCommit = getPreviousCommit(filesystem)
+			const filesPreviousCommit = commitBundle.getFiles(previousCommit)
 			let filesAdd = {}
 
 			// hash staged files
@@ -139,7 +141,17 @@ export const createRepository = (filesystem) => {
 				currentCommitTree = removeLeaf(currentCommitTree)(file)
 			})
 
-			return currentCommitTree
+			// create commit
+			const id = commitBundle.create(
+				previousCommit !== null
+					? [previousCommit]
+					: []
+			)(message)(currentCommitTree)
+
+			// update reference
+			referenceBundle.updateHead(id)
+
+			return id
 		},
 
 		checkout: () => {

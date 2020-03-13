@@ -112,9 +112,28 @@ describe('tests repository branch commit workflow', function () {
 			 * commit stage
 			 */
 			const receivedCommitID = repository.commit('initial commit')
-			const expectedCommitID = ''
+			const expectedCommitID = '4501a116530a8f2eb400829112ffe83e8ab142dd3341eec34aba5cec745b03f7'
 
 			expect(receivedCommitID).to.equal(expectedCommitID)
+		})
+	})
+
+	describe('repository.status', function () {
+		it('succeeds', function () {
+			/**
+			 * checks for file modifications and untracked files
+			 */
+			const receivedStatus = repository.status()
+			const expectedStatus = {
+				untracked: [
+					'setup-cinema4d/tex/albedo.jpg',
+					'setup-zbrush/sculpt_main.ztl'
+				],
+				modified: [],
+				removed: []
+			}
+
+			expect(receivedStatus).to.deep.equal(expectedStatus)
 		})
 	})
 })

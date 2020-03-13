@@ -19,7 +19,7 @@ export const initBranches = (filesystem) => {
 	try {
 		getBranch(filesystem)('master')
 	} catch (e) {
-		createBranch(filesystem)('master')(null)
+		setBranch(filesystem)('master')(null)
 	}
 }
 
@@ -45,9 +45,9 @@ export const getBranchByReference = (filesystem) => (referencePath) => {
 	)))
 }
 
-export const createBranch = (filesystem) => (name) => (commit) => {
+export const setBranch = (filesystem) => (name) => (id) => {
 	const branch = {
-		commit: commit || null
+		commit: id || null
 	}
 
 	filesystem.write(path.join(
@@ -67,7 +67,7 @@ export const createBundle = (filesystem) => {
 
 		get: getBranch(filesystem),
 
-		create: createBranch(filesystem),
+		set: setBranch(filesystem),
 
 		getDirectory: getBranchesDirectory
 	}
