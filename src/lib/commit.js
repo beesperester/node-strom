@@ -92,7 +92,7 @@ export const createCommit = (filesystem) => (parents) => (message) => (tree) => 
 				getCommitsDirectory(),
 				hashPath(hash)
 			)
-		)(tree)
+		)(serialize(tree))
 
 		return hash
 	}
