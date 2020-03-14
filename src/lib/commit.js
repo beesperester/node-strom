@@ -1,66 +1,38 @@
-import path from 'path'
-import { getObject, setObject } from './object'
+import { createBundle as createObjectBundle } from './object'
+import { createBundle as createTreeBundle } from './tree'
 import { hashString } from './utilities/hashing'
 import { deflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
 
 export const getCommitFiles = (filesystem) => (id) => {
 	// get all files from a commit as path: hash key value pairs
+	const objectBundle = createObjectBundle(filesystem)
+	const treeBundle = createTreeBundle(filesystem)
+
 	if (id === null) {
 		return {}
 	}
 
-	const commit = getObject(filesystem)(id)
+	const commit = objectBundle.get(id)
 
-	const unpackTree = (branch) => {
-		const tree = {}
-
-		Object.keys(branch).forEach((object) => {
-			if (branch[object].startsWith('blob')) {
-				tree[object] = path.basename(branch[object])
-			} else if (branch[object].startsWith('tree')) {
-				tree[object] = unpackTree(getObject(filesystem)(path.basename(branch[object])))
-			}
-		})
-
-		return tree
-	}
-
-	const tree = commit.tree
-		? unpackTree(getObject(filesystem)(commit.tree))
-		: {}
+	const tree = treeBundle.unpack(commit.tree)
 
 	return deflate(tree)
 }
 
 export const createCommit = (filesystem) => (parents) => (message) => (tree) => {
-	const hashTree = (branch) => {
-		const tree = {}
-
-		for (let key of Object.keys(branch)) {
-			if (typeof branch[key] === 'object') {
-				tree[key] = path.join('tree', hashTree(branch[key]))
-			} else {
-				tree[key] = path.join('blob', branch[key])
-			}
-		}
-
-		const hash = hashString(serialize(tree))
-
-		setObject(filesystem)(hash)(tree)
-
-		return hash
-	}
+	const objectBundle = createObjectBundle(filesystem)
+	const treeBundle = createTreeBundle(filesystem)
 
 	const commit = {
 		parents,
 		message,
-		tree: hashTree(tree)
+		tree: treeBundle.pack(tree)
 	}
 
 	const id = hashString(serialize(commit))
 
-	setObject(filesystem)(id)(commit)
+	objectBundle.set(id)(commit)
 
 	return id
 }
