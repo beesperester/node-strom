@@ -1,35 +1,8 @@
 import path from 'path'
-import { getObject } from './object'
-import { getRepositoryDirectory } from './repository'
-import { hashPath, hashString } from './utilities/hashing'
+import { getObject, setObject } from './object'
+import { hashString } from './utilities/hashing'
 import { deflate } from './utilities/map'
-import { deserialize, serialize } from './utilities/serialization'
-
-export const getCommitsDirectory = () => {
-	return 'objects'
-}
-
-export const getCommit = (filesystem) => (id) => {
-	return deserialize(
-		filesystem.read(
-			path.join(
-				getRepositoryDirectory(),
-				getCommitsDirectory(),
-				hashPath(id)
-			)
-		)
-	)
-}
-
-export const setCommit = (filesystem) => (id) => (commit) => {
-	filesystem.write(
-		path.join(
-			getRepositoryDirectory(),
-			getCommitsDirectory(),
-			hashPath(id)
-		)
-	)(serialize(commit))
-}
+import { serialize } from './utilities/serialization'
 
 export const getCommitFiles = (filesystem) => (id) => {
 	// get all files from a commit as path: hash key value pairs
@@ -37,7 +10,7 @@ export const getCommitFiles = (filesystem) => (id) => {
 		return {}
 	}
 
-	const commit = getCommit(filesystem)(id)
+	const commit = getObject(filesystem)(id)
 
 	const unpackTree = (branch) => {
 		const tree = {}
@@ -60,19 +33,7 @@ export const getCommitFiles = (filesystem) => (id) => {
 	return deflate(tree)
 }
 
-export const copy = (filesystem) => (file) => (hash) => {
-	filesystem.copy(file)(
-		path.join(
-			getRepositoryDirectory(),
-			getCommitsDirectory(),
-			hashPath(hash)
-		)
-	)
-}
-
 export const createCommit = (filesystem) => (parents) => (message) => (tree) => {
-
-
 	const hashTree = (branch) => {
 		const tree = {}
 
@@ -86,13 +47,7 @@ export const createCommit = (filesystem) => (parents) => (message) => (tree) => 
 
 		const hash = hashString(serialize(tree))
 
-		filesystem.write(
-			path.join(
-				getRepositoryDirectory(),
-				getCommitsDirectory(),
-				hashPath(hash)
-			)
-		)(serialize(tree))
+		setObject(filesystem)(hash)(tree)
 
 		return hash
 	}
@@ -105,20 +60,14 @@ export const createCommit = (filesystem) => (parents) => (message) => (tree) => 
 
 	const id = hashString(serialize(commit))
 
-	setCommit(filesystem)(id)(commit)
+	setObject(filesystem)(id)(commit)
 
 	return id
 }
 
 export const createBundle = (filesystem) => {
 	return {
-		get: getCommit(filesystem),
-
-		getDirectory: getCommitsDirectory,
-
 		getFiles: getCommitFiles(filesystem),
-
-		copy: copy(filesystem),
 
 		create: createCommit(filesystem)
 	}

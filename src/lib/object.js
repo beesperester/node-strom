@@ -1,7 +1,7 @@
 import path from 'path'
 import { getRepositoryDirectory } from './repository'
 import { hashPath } from './utilities/hashing'
-import { deserialize } from './utilities/serialization'
+import { deserialize, serialize } from './utilities/serialization'
 
 export const getObjectsDirectory = () => {
 	return 'objects'
@@ -19,8 +19,6 @@ export const initObjects = (filesystem) => {
 }
 
 export const getObject = (filesystem) => (id) => {
-	const state = filesystem.adapter.state()
-
 	return deserialize(filesystem.read(
 		path.join(
 			getRepositoryDirectory(),
@@ -30,10 +28,36 @@ export const getObject = (filesystem) => (id) => {
 	))
 }
 
+export const setObject = (filesystem) => (id) => (content) => {
+	filesystem.write(
+		path.join(
+			getRepositoryDirectory(),
+			getObjectsDirectory(),
+			hashPath(id)
+		)
+	)(serialize(content))
+}
+
+export const copyObject = (filesystem) => (file) => (id) => {
+	filesystem.copy(file)(
+		path.join(
+			getRepositoryDirectory(),
+			getObjectsDirectory(),
+			hashPath(id)
+		)
+	)
+}
+
 export const createBundle = (filesystem) => {
 	return {
 		init: () => initObjects(filesystem),
 
-		getDirectory: getObjectsDirectory
+		get: getObject(filesystem),
+
+		set: setObject(filesystem),
+
+		getDirectory: getObjectsDirectory,
+
+		copy: copyObject(filesystem)
 	}
 }

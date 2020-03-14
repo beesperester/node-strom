@@ -126,7 +126,7 @@ export const createRepository = (filesystem) => {
 
 			// copy staged files to hashed path
 			Object.keys(filesAdd).forEach((file) => {
-				commitBundle.copy(file)(filesAdd[file])
+				objectBundle.copy(file)(filesAdd[file])
 			})
 
 			// add staged files to previous commit files
