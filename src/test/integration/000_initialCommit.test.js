@@ -112,7 +112,7 @@ describe('tests repository branch commit workflow', function () {
 			 * commit stage
 			 */
 			const receivedCommitID = repository.commit('initial commit')
-			const expectedCommitID = '4501a116530a8f2eb400829112ffe83e8ab142dd3341eec34aba5cec745b03f7'
+			const expectedCommitID = 'b87c453822b3bd67871b8f55b95a21bac6c0e3cf1ea5f4af3d23432e20546a7c'
 
 			expect(receivedCommitID).to.equal(expectedCommitID)
 		})
@@ -164,7 +164,7 @@ describe('tests repository branch commit workflow', function () {
 			 * commit stage
 			 */
 			const receivedCommitID = repository.commit('second commit')
-			const expectedCommitID = '1d82db928b55034bf537bcb37faf4a543ce70db58f15c60223cb1489d5a3804f'
+			const expectedCommitID = 'f25413bebf49cd2614bb86ee224b87214525af1b8c064c3ea750f656a5ff2242'
 
 			expect(receivedCommitID).to.equal(expectedCommitID)
 		})

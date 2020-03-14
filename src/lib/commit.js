@@ -1,5 +1,5 @@
 import { createBundle as createObjectBundle } from './object'
-import { createBundle as createTreeBundle, unpackTree } from './tree'
+import { createBundle as createTreeBundle } from './tree'
 import { hashString } from './utilities/hashing'
 import { deflate, inflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
@@ -17,12 +17,10 @@ export const getCommitFiles = (filesystem) => (id) => {
 
 	const tree = treeBundle.unpack(commit.tree)
 
-	const result = deflate(tree)
-
-	return result
+	return deflate(tree)
 }
 
-export const createCommit = (filesystem) => (parents) => (message) => (stage) => {
+export const createCommit = (filesystem) => (parents) => (author) => (message) => (stage) => {
 	const objectBundle = createObjectBundle(filesystem)
 	const treeBundle = createTreeBundle(filesystem)
 
@@ -65,6 +63,7 @@ export const createCommit = (filesystem) => (parents) => (message) => (stage) =>
 
 	const commit = {
 		parents,
+		author,
 		message,
 		tree: treeBundle.pack(inflate(tree))
 	}

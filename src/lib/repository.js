@@ -1,3 +1,4 @@
+import { createBundle as createAuthorBundle } from './author'
 import { createBundle as createBranchBundle } from './branch'
 import { createBundle as createCommitBundle } from './commit'
 import { createBundle as createObjectBundle } from './object'
@@ -91,6 +92,7 @@ export const createRepository = (filesystem) => {
 	const branchBundle = createBranchBundle(filesystem)
 	const referenceBundle = createReferenceBundle(filesystem)
 	const commitBundle = createCommitBundle(filesystem)
+	const authorBundle = createAuthorBundle(filesystem)
 
 	return {
 		stage,
@@ -113,13 +115,14 @@ export const createRepository = (filesystem) => {
 
 		commit: (message) => {
 			const previousCommit = getPreviousCommit(filesystem)
+			const author = authorBundle.create('Bernhard Esperester')('bernhard@esperester.de')
 
 			// create commit
 			const id = commitBundle.create(
 				previousCommit !== null
 					? [previousCommit]
 					: []
-			)(message)(stage)
+			)(author)(message)(stage)
 
 			// update reference
 			referenceBundle.updateHead(id)
