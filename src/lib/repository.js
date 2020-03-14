@@ -114,37 +114,13 @@ export const createRepository = (filesystem) => {
 
 		commit: (message) => {
 			const previousCommit = getPreviousCommit(filesystem)
-			const filesPreviousCommit = commitBundle.getFiles(previousCommit)
-			let filesAdd = {}
-
-			// hash staged files
-			stage.state().add.forEach((file) => {
-				filesAdd[file] = filesystem.hash(file)
-			})
-
-			// copy staged files to hashed path
-			Object.keys(filesAdd).forEach((file) => {
-				objectBundle.copy(file)(filesAdd[file])
-			})
-
-			// add staged files to previous commit files
-			let currentCommitTree = inflate(filesPreviousCommit)
-
-			Object.keys(filesAdd).forEach((file) => {
-				currentCommitTree = addLeaf(currentCommitTree)(file)(filesAdd[file])
-			})
-
-			// remove staged files from previous commit files
-			stage.state().remove.forEach((file) => {
-				currentCommitTree = removeLeaf(currentCommitTree)(file)
-			})
 
 			// create commit
 			const id = commitBundle.create(
 				previousCommit !== null
 					? [previousCommit]
 					: []
-			)(message)(currentCommitTree)
+			)(message)(stage)
 
 			// update reference
 			referenceBundle.updateHead(id)
