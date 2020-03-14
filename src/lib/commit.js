@@ -21,6 +21,10 @@ export const getCommitFiles = (filesystem) => (id) => {
 }
 
 export const createCommit = (filesystem) => (parents) => (author) => (message) => (stage) => {
+	if (stage.state().add.length === 0 && stage.state().remove.length === 0) {
+		throw new Error('Nothing to commit')
+	}
+
 	const objectBundle = createObjectBundle(filesystem)
 	const treeBundle = createTreeBundle(filesystem)
 
