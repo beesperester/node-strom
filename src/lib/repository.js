@@ -4,7 +4,6 @@ import { createBundle as createObjectBundle } from './object'
 import { createBundle as createReferenceBundle } from './reference'
 import { createBundle as createStageBundle } from './stage'
 import { filterMinimatchString } from './utilities/filtering'
-import { addLeaf, copyDeep, inflate, removeLeaf } from './utilities/map'
 
 export const getRepositoryDirectory = () => {
 	return '.strom'
@@ -125,6 +124,7 @@ export const createRepository = (filesystem) => {
 			// update reference
 			referenceBundle.updateHead(id)
 
+			// reset stage
 			stage.reset()
 
 			return id
