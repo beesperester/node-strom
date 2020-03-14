@@ -3,7 +3,7 @@ import { getRepositoryDirectory } from './repository'
 import { serialize, deserialize } from './utilities/serialization'
 
 export const addFile = (filesystem) => (file) => {
-	const state = getStageState(filesystem)
+	const state = getStage(filesystem)
 
 	const nextState = state.add.includes(file)
 		? state
@@ -15,11 +15,11 @@ export const addFile = (filesystem) => (file) => {
 			remove: state.remove
 		}
 
-	setStageState(filesystem)(nextState)
+	setStage(filesystem)(nextState)
 }
 
 export const removeFile = (filesystem) => (file) => {
-	const state = getStageState(filesystem)
+	const state = getStage(filesystem)
 
 	const nextState = state.remove.includes(file)
 		? {
@@ -30,10 +30,10 @@ export const removeFile = (filesystem) => (file) => {
 		}
 		: state
 
-	setStageState(filesystem)(nextState)
+	setStage(filesystem)(nextState)
 }
 
-export const getStageState = (filesystem) => {
+export const getStage = (filesystem) => {
 	return deserialize(
 		filesystem.read(
 			path.join(
@@ -44,7 +44,7 @@ export const getStageState = (filesystem) => {
 	)
 }
 
-export const setStageState = (filesystem) => (state) => {
+export const setStage = (filesystem) => (state) => {
 	filesystem.write(
 		path.join(
 			getRepositoryDirectory(),
@@ -58,7 +58,7 @@ export const getStageFile = () => {
 }
 
 export const stageIncludes = (filesystem) => (file) => {
-	return getStageState(filesystem).includes(file)
+	return getStage(filesystem).includes(file)
 }
 
 export const initStage = (filesystem) => {
@@ -68,18 +68,24 @@ export const initStage = (filesystem) => {
 	)
 
 	if (!filesystem.isFile(stageFile)) {
-		setStageState(filesystem)({
-			add: [],
-			remove: []
-		})
+		resetStage(filesystem)
 	}
+}
+
+export const resetStage = (filesystem) => {
+	setStage(filesystem)({
+		add: [],
+		remove: []
+	})
 }
 
 export const createBundle = (filesystem) => {
 	return {
 		init: () => initStage(filesystem),
 
-		state: () => getStageState(filesystem),
+		state: () => getStage(filesystem),
+
+		reset: () => resetStage(filesystem),
 
 		addFile: addFile(filesystem),
 

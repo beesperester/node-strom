@@ -136,4 +136,37 @@ describe('tests repository branch commit workflow', function () {
 			expect(receivedStatus).to.deep.equal(expectedStatus)
 		})
 	})
+
+	describe('repository.stage.addFiles', function () {
+		it('succeeds', function () {
+			/**
+			 * adds file to stage
+			 */
+			repository.stage.addFile(
+				'setup-zbrush/sculpt_main.ztl'
+			)
+
+			const receivedStage = repository.stage.state()
+			const expectedStage = {
+				add: [
+					'setup-zbrush/sculpt_main.ztl'
+				],
+				remove: []
+			}
+
+			expect(receivedStage).to.deep.equal(expectedStage)
+		})
+	})
+
+	describe('repository.commit', function () {
+		it('succeeds', function () {
+			/**
+			 * commit stage
+			 */
+			const receivedCommitID = repository.commit('second commit')
+			const expectedCommitID = '1d82db928b55034bf537bcb37faf4a543ce70db58f15c60223cb1489d5a3804f'
+
+			expect(receivedCommitID).to.equal(expectedCommitID)
+		})
+	})
 })

@@ -1,11 +1,10 @@
-import path from 'path'
 import { createBundle as createBranchBundle } from './branch'
 import { createBundle as createCommitBundle } from './commit'
 import { createBundle as createObjectBundle } from './object'
 import { createBundle as createReferenceBundle } from './reference'
 import { createBundle as createStageBundle } from './stage'
 import { filterMinimatchString } from './utilities/filtering'
-import { addLeaf, copyDeep, removeLeaf } from './utilities/map'
+import { addLeaf, copyDeep, inflate, removeLeaf } from './utilities/map'
 
 export const getRepositoryDirectory = () => {
 	return '.strom'
@@ -114,7 +113,6 @@ export const createRepository = (filesystem) => {
 		status: () => getRepositoryStatus(filesystem),
 
 		commit: (message) => {
-			const head = referenceBundle.getHead()
 			const previousCommit = getPreviousCommit(filesystem)
 			const filesPreviousCommit = commitBundle.getFiles(previousCommit)
 			let filesAdd = {}
@@ -130,7 +128,7 @@ export const createRepository = (filesystem) => {
 			})
 
 			// add staged files to previous commit files
-			let currentCommitTree = copyDeep(filesPreviousCommit)
+			let currentCommitTree = inflate(filesPreviousCommit)
 
 			Object.keys(filesAdd).forEach((file) => {
 				currentCommitTree = addLeaf(currentCommitTree)(file)(filesAdd[file])
@@ -150,6 +148,8 @@ export const createRepository = (filesystem) => {
 
 			// update reference
 			referenceBundle.updateHead(id)
+
+			stage.reset()
 
 			return id
 		},

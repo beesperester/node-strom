@@ -1,6 +1,6 @@
 import path from 'path'
 import { getBranch, getBranchesDirectory, setBranch } from './branch'
-import { getCommit, getCommitsDirectory } from './commit'
+import { getCommitsDirectory } from './commit'
 import { getRepositoryDirectory } from './repository'
 import { deserialize, serialize } from './utilities/serialization'
 
