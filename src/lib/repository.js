@@ -63,7 +63,7 @@ export const diffFiles = (filesA) => (filesB) => {
 
 	// compare files from previous commit with files from working directory
 	Object.keys(filesB).forEach((file) => {
-		if (!filesA.includes(Object.keys(filesB))) {
+		if (!Object.keys(filesA).includes(file)) {
 			// add removed file
 			removed.push(file)
 		}

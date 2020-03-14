@@ -9,7 +9,11 @@ export const createAdapter = (storage) => {
 		state: () => copyDeep(clone),
 
 		walk: (file) => {
-			return Object.keys(deflate(getLeaf(clone)(file))(''))
+			return Object.keys(
+				deflate(
+					getLeaf(clone)(file)
+				)
+			)
 		},
 
 		write: (file) => (contents) => {

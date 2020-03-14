@@ -6,31 +6,35 @@ export const copy = (map) => Object.assign({}, map)
 
 export const copyDeep = (map) => JSON.parse(JSON.stringify(map))
 
-export const deflate = (map) => (namespace) => {
-	const namespaceParts = namespace.split('/').filter(filterEmptyString)
-	const result = {}
+export const deflate = (map) => {
+	const deflateRecursive = (map) => (namespace) => {
+		const namespaceParts = namespace.split('/').filter(filterEmptyString)
+		const result = {}
 
-	for (let key of Object.keys(map)) {
-		const currentNamespaceParts = [...namespaceParts, key]
-		const currentNamespace = currentNamespaceParts.join('/')
-		const next = map[key]
+		for (let key of Object.keys(map)) {
+			const currentNamespaceParts = [...namespaceParts, key]
+			const currentNamespace = currentNamespaceParts.join('/')
+			const next = map[key]
 
-		if (typeof next === 'object') {
-			Object.assign(
-				result,
-				deflate(map[key])(currentNamespace)
-			)
-		} else {
-			Object.assign(
-				result,
-				{
-					[currentNamespace]: map[key]
-				}
-			)
+			if (typeof next === 'object') {
+				Object.assign(
+					result,
+					deflateRecursive(map[key])(currentNamespace)
+				)
+			} else {
+				Object.assign(
+					result,
+					{
+						[currentNamespace]: map[key]
+					}
+				)
+			}
 		}
+
+		return result
 	}
 
-	return result
+	return deflateRecursive(map)('')
 }
 
 export const inflate = (map) => {

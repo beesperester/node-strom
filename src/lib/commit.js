@@ -17,7 +17,9 @@ export const getCommitFiles = (filesystem) => (id) => {
 
 	const tree = treeBundle.unpack(commit.tree)
 
-	return deflate(tree)
+	const result = deflate(tree)
+
+	return result
 }
 
 export const createCommit = (filesystem) => (parents) => (message) => (tree) => {
