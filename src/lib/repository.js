@@ -28,15 +28,13 @@ export const getWorkingDirFiles = (filesystem) => {
 	return workingDirFilesHashed
 }
 
-export const getPreviousCommit = (filesystem) => {
+export const getCommitByReferenceName = (filesystem) => (referenceName) => {
 	const referenceBundle = createReferenceBundle(filesystem)
+	const reference = referenceBundle.get(referenceName)
 
-	// get previous commit from head
+	// get previous commit from reference
 	try {
-		const head = referenceBundle.getHead()
-		const id = referenceBundle.resolve(head)
-
-		return id
+		return referenceBundle.resolve(reference)
 	} catch (e) {
 		//
 	}
@@ -75,12 +73,20 @@ export const diffFiles = (filesA) => (filesB) => {
 	}
 }
 
-export const getRepositoryStatus = (filesystem) => {
+export const getRepositoryState = (filesystem) => {
 	// get all files from working dir, except from repository directory
+	const stage = createStageBundle(filesystem)
 	const commitBundle = createCommitBundle(filesystem)
 	const filesWorkingdir = getWorkingDirFiles(filesystem)
-	const previousCommit = getPreviousCommit(filesystem)
+	const previousCommit = getCommitByReferenceName(filesystem)('head')
 	const filesPreviousCommit = commitBundle.getFiles(previousCommit)
+
+	// remove staged files from working directory list
+	stage.state().add.forEach((file) => {
+		if (Object.keys(filesWorkingdir).includes(file)) {
+			delete filesWorkingdir[file]
+		}
+	})
 
 	return diffFiles(filesWorkingdir)(filesPreviousCommit)
 }
@@ -95,7 +101,16 @@ export const createRepository = (filesystem) => {
 	const authorBundle = createAuthorBundle(filesystem)
 
 	return {
-		stage,
+		head: {
+			files: () => {
+				// get all files from head commit
+				const commit = getCommitByReferenceName(filesystem)('head')
+
+				return commitBundle.getFiles(commit)
+			},
+
+			commit: () => getCommitByReferenceName(filesystem)('head')
+		},
 
 		init: () => {
 			// initialize objects structure if missing
@@ -111,10 +126,25 @@ export const createRepository = (filesystem) => {
 			stage.init()
 		},
 
-		status: () => getRepositoryStatus(filesystem),
+		state: () => getRepositoryState(filesystem),
+
+		stage: (file) => {
+			// adds file to stage by checking which action needs to be taken
+			// depending on untracked, modified or removed modifier
+
+			const state = getRepositoryState(filesystem)
+
+			if (state.untracked.includes(file) || stage.modified.includes(file)) {
+				stage.stageAdded(file)
+			} else if (stage.removed.includes(file)) {
+				stage.stageRemoved(file)
+			}
+		},
+
+		unstage: stage.unstage,
 
 		commit: (message) => {
-			const previousCommit = getPreviousCommit(filesystem)
+			const previousCommit = getCommitByReferenceName(filesystem)('head')
 			const author = authorBundle.create('Bernhard Esperester')('bernhard@esperester.de')
 
 			// create commit

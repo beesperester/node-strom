@@ -2,7 +2,7 @@ import path from 'path'
 import { getRepositoryDirectory } from './repository'
 import { serialize, deserialize } from './utilities/serialization'
 
-export const addFile = (filesystem) => (file) => {
+export const stageAddedFile = (filesystem) => (file) => {
 	const state = getStage(filesystem)
 
 	const nextState = state.add.includes(file)
@@ -18,7 +18,22 @@ export const addFile = (filesystem) => (file) => {
 	setStage(filesystem)(nextState)
 }
 
-export const removeFile = (filesystem) => (file) => {
+export const unstageFile = (filesystem) => (file) => {
+	const state = getStage(filesystem)
+
+	const nextState = {
+		add: [
+			...state.add.filter((x) => x !== file)
+		],
+		remove: [
+			...state.remove.filter((x) => x !== file)
+		]
+	}
+
+	setStage(filesystem)(nextState)
+}
+
+export const stageRemovedFile = (filesystem) => (file) => {
 	const state = getStage(filesystem)
 
 	const nextState = state.remove.includes(file)
@@ -87,15 +102,11 @@ export const createBundle = (filesystem) => {
 
 		reset: () => resetStage(filesystem),
 
-		addFile: addFile(filesystem),
+		stageAdded: stageAddedFile(filesystem),
 
-		addFiles: (files) => {
-			files.forEach((file) => {
-				addFile(filesystem)(file)
-			})
-		},
+		unstage: unstageFile(filesystem),
 
-		remove: removeFile(filesystem),
+		stageRemoved: stageRemovedFile(filesystem),
 
 		includes: stageIncludes(filesystem)
 	}

@@ -6,7 +6,7 @@ import { describe, it } from 'mocha'
 import strom from '../../index'
 import { serialize } from '../../lib/utilities/serialization'
 
-describe('tests repository branch commit workflow', function () {
+describe('tests repository base functionality', function () {
 	const storage = {
 		'setup-cinema4d': {
 			'model_main.c4d': serialize('contents of model_main.c4d'),
@@ -24,7 +24,7 @@ describe('tests repository branch commit workflow', function () {
 	const repository = strom.lib.repository.createRepository(filesystem)
 
 	describe('repository.init', function () {
-		it('succeeds', function () {
+		it('creates repository structure', function () {
 			/**
 			 * creates neccessary directories and files if missing,
 			 * creates master branch if missing
@@ -38,8 +38,8 @@ describe('tests repository branch commit workflow', function () {
 			*/
 			repository.init()
 
-			const receivedInitAdapterState = adapter.state()
-			const expectedInitAdapterState = {
+			const received = adapter.state()
+			const expected = {
 				...storage,
 
 				'.strom': {
@@ -61,17 +61,14 @@ describe('tests repository branch commit workflow', function () {
 				}
 			}
 
-			expect(receivedInitAdapterState).to.deep.equal(expectedInitAdapterState)
+			expect(received).to.deep.equal(expected)
 		})
 	})
 
 	describe('repository.status', function () {
-		it('succeeds', function () {
-			/**
-			 * checks for file modifications and untracked files
-			 */
-			const receivedStatus = repository.status()
-			const expectedStatus = {
+		it('checks for file modifications and untracked files', function () {
+			const receivedState = repository.state()
+			const expectedState = {
 				untracked: [
 					'setup-cinema4d/model_main.c4d',
 					'setup-cinema4d/tex/albedo.jpg',
@@ -81,50 +78,32 @@ describe('tests repository branch commit workflow', function () {
 				removed: []
 			}
 
-			expect(receivedStatus).to.deep.equal(expectedStatus)
+			expect(receivedState).to.deep.equal(expectedState)
 		})
 	})
 
-	describe('repository.stage.addFiles', function () {
-		it('succeeds', function () {
-			/**
-			 * adds file to stage
-			 */
-			repository.stage.addFiles([
-				'setup-cinema4d/model_main.c4d'
-			])
+	describe('repository.stage', function () {
+		it('adds untracked file to stage', function () {
+			repository.stage('setup-cinema4d/model_main.c4d')
+			repository.stage('setup-cinema4d/tex/albedo.jpg')
 
-			const receivedStage = repository.stage.state()
-			const expectedStage = {
-				add: [
-					'setup-cinema4d/model_main.c4d'
+			const receivedState = repository.state()
+			const expectedState = {
+				untracked: [
+					'setup-zbrush/sculpt_main.ztl'
 				],
-				remove: []
+				modified: [],
+				removed: []
 			}
 
-			expect(receivedStage).to.deep.equal(expectedStage)
+			expect(receivedState).to.deep.equal(expectedState)
 		})
-	})
 
-	describe('repository.commit', function () {
-		it('succeeds', function () {
-			/**
-			 * commit stage
-			 */
-			const receivedCommitID = repository.commit('initial commit')
-			const expectedCommitID = 'b87c453822b3bd67871b8f55b95a21bac6c0e3cf1ea5f4af3d23432e20546a7c'
+		it('removes file from stage', function () {
+			repository.unstage('setup-cinema4d/tex/albedo.jpg')
 
-			expect(receivedCommitID).to.equal(expectedCommitID)
-		})
-	})
-
-	describe('repository.status', function () {
-		it('succeeds', function () {
-			/**
-			 * checks for file modifications and untracked files
-			 */
-			const receivedStatus = repository.status()
-			const expectedStatus = {
+			const receivedState = repository.state()
+			const expectedState = {
 				untracked: [
 					'setup-cinema4d/tex/albedo.jpg',
 					'setup-zbrush/sculpt_main.ztl'
@@ -133,38 +112,17 @@ describe('tests repository branch commit workflow', function () {
 				removed: []
 			}
 
-			expect(receivedStatus).to.deep.equal(expectedStatus)
-		})
-	})
-
-	describe('repository.stage.addFiles', function () {
-		it('succeeds', function () {
-			/**
-			 * adds file to stage
-			 */
-			repository.stage.addFile(
-				'setup-zbrush/sculpt_main.ztl'
-			)
-
-			const receivedStage = repository.stage.state()
-			const expectedStage = {
-				add: [
-					'setup-zbrush/sculpt_main.ztl'
-				],
-				remove: []
-			}
-
-			expect(receivedStage).to.deep.equal(expectedStage)
+			expect(receivedState).to.deep.equal(expectedState)
 		})
 	})
 
 	describe('repository.commit', function () {
-		it('succeeds', function () {
+		it('commits staged files', function () {
 			/**
 			 * commit stage
 			 */
-			const receivedCommitID = repository.commit('second commit')
-			const expectedCommitID = 'f25413bebf49cd2614bb86ee224b87214525af1b8c064c3ea750f656a5ff2242'
+			const receivedCommitID = repository.commit('initial commit')
+			const expectedCommitID = 'b87c453822b3bd67871b8f55b95a21bac6c0e3cf1ea5f4af3d23432e20546a7c'
 
 			expect(receivedCommitID).to.equal(expectedCommitID)
 		})
