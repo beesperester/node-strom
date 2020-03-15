@@ -66,10 +66,10 @@ describe('tests repository base functionality', function () {
 	})
 
 	describe('repository.status', function () {
-		it('checks for file modifications and untracked files', function () {
+		it('checks for added, modified, removed files', function () {
 			const receivedState = repository.state()
 			const expectedState = {
-				untracked: [
+				added: [
 					'setup-cinema4d/model_main.c4d',
 					'setup-cinema4d/tex/albedo.jpg',
 					'setup-zbrush/sculpt_main.ztl'
@@ -83,13 +83,13 @@ describe('tests repository base functionality', function () {
 	})
 
 	describe('repository.stage', function () {
-		it('adds untracked file to stage', function () {
+		it('adds added file to stage', function () {
 			repository.stage('setup-cinema4d/model_main.c4d')
 			repository.stage('setup-cinema4d/tex/albedo.jpg')
 
 			const receivedState = repository.state()
 			const expectedState = {
-				untracked: [
+				added: [
 					'setup-zbrush/sculpt_main.ztl'
 				],
 				modified: [],
@@ -104,7 +104,7 @@ describe('tests repository base functionality', function () {
 
 			const receivedState = repository.state()
 			const expectedState = {
-				untracked: [
+				added: [
 					'setup-cinema4d/tex/albedo.jpg',
 					'setup-zbrush/sculpt_main.ztl'
 				],

@@ -43,15 +43,15 @@ export const getCommitByReferenceName = (filesystem) => (referenceName) => {
 }
 
 export const diffFiles = (filesA) => (filesB) => {
-	const untracked = []
+	const added = []
 	const modified = []
 	const removed = []
 
 	// compare files from working directory with files from previous commit
 	Object.keys(filesA).forEach((file) => {
 		if (!Object.keys(filesB).includes(file)) {
-			// add untracked file
-			untracked.push(file)
+			// add added file
+			added.push(file)
 		} else if (filesA[file] !== filesB[file]) {
 			// add modified file
 			modified.push(file)
@@ -67,7 +67,7 @@ export const diffFiles = (filesA) => (filesB) => {
 	})
 
 	return {
-		untracked,
+		added,
 		modified,
 		removed
 	}
@@ -130,11 +130,11 @@ export const createRepository = (filesystem) => {
 
 		stage: (file) => {
 			// adds file to stage by checking which action needs to be taken
-			// depending on untracked, modified or removed modifier
+			// depending on added, modified or removed modifier
 
 			const state = getRepositoryState(filesystem)
 
-			if (state.untracked.includes(file) || stage.modified.includes(file)) {
+			if (state.added.includes(file) || stage.modified.includes(file)) {
 				stage.stageAdded(file)
 			} else if (stage.removed.includes(file)) {
 				stage.stageRemoved(file)
