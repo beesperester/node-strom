@@ -21,7 +21,7 @@ export const getCommitFiles = (filesystem) => (id) => {
 }
 
 export const createCommit = (filesystem) => (parents) => (author) => (message) => (stage) => {
-	if (stage.state().add.length === 0 && stage.state().remove.length === 0) {
+	if (stage.add.length === 0 && stage.remove.length === 0) {
 		throw new Error('Nothing to commit')
 	}
 
@@ -51,7 +51,7 @@ export const createCommit = (filesystem) => (parents) => (author) => (message) =
 	})
 
 	// hash staged files and add to tree
-	stage.state().add.forEach((file) => {
+	stage.add.forEach((file) => {
 		tree[file] = filesystem.hash(file)
 
 		// copy file to objects
@@ -59,7 +59,7 @@ export const createCommit = (filesystem) => (parents) => (author) => (message) =
 	})
 
 	// remove staged files from previous commit files
-	stage.state().remove.forEach((file) => {
+	stage.remove.forEach((file) => {
 		if (Object.keys(tree).includes(file)) {
 			delete tree[file]
 		}

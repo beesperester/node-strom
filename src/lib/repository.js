@@ -126,8 +126,10 @@ export const createRepository = (filesystem) => {
 			stage.init()
 		},
 
+		// state of working directory compared with latest commit
 		state: () => getRepositoryState(filesystem),
 
+		// stage, unstage functionality
 		stage: (file) => {
 			// adds file to stage by checking which action needs to be taken
 			// depending on added, modified or removed modifier
@@ -143,6 +145,7 @@ export const createRepository = (filesystem) => {
 
 		unstage: stage.unstage,
 
+		// commit staged changes
 		commit: (message) => {
 			const previousCommit = getCommitByReferenceName(filesystem)('head')
 			const author = authorBundle.create('Bernhard Esperester')('bernhard@esperester.de')
@@ -152,7 +155,7 @@ export const createRepository = (filesystem) => {
 				previousCommit !== null
 					? [previousCommit]
 					: []
-			)(author)(message)(stage)
+			)(author)(message)(stage.state())
 
 			// update reference
 			referenceBundle.updateHead(id)
@@ -165,6 +168,10 @@ export const createRepository = (filesystem) => {
 
 		checkout: () => {
 
+		},
+
+		history: () => {
+			return []
 		}
 	}
 }
