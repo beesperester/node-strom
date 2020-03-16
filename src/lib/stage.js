@@ -3,7 +3,7 @@ import { paths } from './config'
 import { buildRepositoryPath } from './repository'
 import { serialize, deserialize } from './utilities/serialization'
 
-export const stageAddedFile = (filesystem) => (file) => {
+export const addFile = (filesystem) => (file) => {
 	const state = getStage(filesystem)
 
 	const nextState = state.add.includes(file)
@@ -34,7 +34,7 @@ export const unstageFile = (filesystem) => (file) => {
 	setStage(filesystem)(nextState)
 }
 
-export const stageRemovedFile = (filesystem) => (file) => {
+export const removeFile = (filesystem) => (file) => {
 	const state = getStage(filesystem)
 
 	const nextState = state.remove.includes(file)
@@ -91,10 +91,12 @@ export const createBundle = (filesystem) => {
 
 		reset: () => resetStage(filesystem),
 
-		stageAdded: stageAddedFile(filesystem),
+		add: addFile(filesystem),
 
 		unstage: unstageFile(filesystem),
 
-		stageRemoved: stageRemovedFile(filesystem)
+		remove: removeFile(filesystem),
+
+		buildPath: () => buildStagePath(filesystem)
 	}
 }

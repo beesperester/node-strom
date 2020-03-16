@@ -1,7 +1,6 @@
 import path from 'path'
 import { createBundle as createObjectBundle } from './object'
-import { hashString } from './utilities/hashing'
-import { serialize } from './utilities/serialization'
+import { hashMap } from './utilities/hashing'
 
 export const getTreePath = (id) => {
 	return path.join(
@@ -20,26 +19,9 @@ export const getBlobPath = (id) => {
 export const packTree = (filesystem) => (branch) => {
 	const objectBundle = createObjectBundle(filesystem)
 
-	const hashTreeRecursive = (branch) => {
-		const tree = {}
-
-		for (let key of Object.keys(branch)) {
-			if (typeof branch[key] === 'object') {
-				tree[key] = getTreePath(hashTreeRecursive(branch[key]))
-			} else {
-				tree[key] = getBlobPath(branch[key])
-			}
-		}
-
-		const hash = hashString(serialize(tree))
-
-		// store tree in objects
-		objectBundle.set(hash)(tree)
-
-		return hash
-	}
-
-	return hashTreeRecursive(branch)
+	return hashMap(branch)(getTreePath)(getBlobPath)((id, contents) => {
+		objectBundle.set(id)(contents)
+	})
 }
 
 export const idFromTreePath = (treePath) => {

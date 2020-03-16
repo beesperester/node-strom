@@ -1,16 +1,17 @@
 import path from 'path'
-import { getRepositoryDirectory } from './repository.old'
+import { paths } from './config'
+import { buildRepositoryPath } from './repository'
 import { serialize, deserialize } from './utilities/serialization'
 
-export const getBranchesDirectory = () => {
-	return 'branches'
+export const buildBranchPath = (filesystem) => {
+	return path.join(
+		buildRepositoryPath(filesystem),
+		paths.branch
+	)
 }
 
-export const initBranches = (filesystem) => {
-	const branchesDirectory = path.join(
-		getRepositoryDirectory(),
-		getBranchesDirectory()
-	)
+export const initBranch = (filesystem) => {
+	const branchesDirectory = buildBranchPath(filesystem)
 
 	if (!filesystem.isDir(branchesDirectory)) {
 		filesystem.mkdir(branchesDirectory)
@@ -24,25 +25,18 @@ export const initBranches = (filesystem) => {
 }
 
 export const getBranches = (filesystem) => {
-	return filesystem.lsdir(path.join(
-		getRepositoryDirectory(),
-		getBranchesDirectory()
-	))
+	return filesystem.lsdir(buildBranchPath(filesystem))
 }
 
 export const getBranch = (filesystem) => (name) => {
-	return deserialize(filesystem.read(path.join(
-		getRepositoryDirectory(),
-		getBranchesDirectory(),
-		name
-	)))
-}
-
-export const getBranchByReference = (filesystem) => (referencePath) => {
-	return deserialize(filesystem.read(path.join(
-		getRepositoryDirectory(),
-		referencePath
-	)))
+	return deserialize(
+		filesystem.read(
+			path.join(
+				buildBranchPath(filesystem),
+				name
+			)
+		)
+	)
 }
 
 export const setBranch = (filesystem) => (name) => (id) => {
@@ -50,18 +44,19 @@ export const setBranch = (filesystem) => (name) => (id) => {
 		commit: id || null
 	}
 
-	filesystem.write(path.join(
-		getRepositoryDirectory(),
-		getBranchesDirectory(),
-		name
-	))(serialize(branch))
+	filesystem.write(
+		path.join(
+			buildBranchPath(filesystem),
+			name
+		)
+	)(serialize(branch))
 
 	return name
 }
 
 export const createBundle = (filesystem) => {
 	return {
-		init: () => initBranches(filesystem),
+		init: () => initBranch(filesystem),
 
 		getAll: () => getBranches(filesystem),
 
@@ -69,6 +64,6 @@ export const createBundle = (filesystem) => {
 
 		set: setBranch(filesystem),
 
-		getDirectory: getBranchesDirectory
+		buildPath: () => buildBranchPath(filesystem)
 	}
 }

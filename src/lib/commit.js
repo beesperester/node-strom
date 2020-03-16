@@ -4,23 +4,16 @@ import { hashString } from './utilities/hashing'
 import { deflate, inflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
 
-export const getCommitFiles = (filesystem) => (id) => {
+export const getCommitFiles = (filesystem) => (commit) => {
 	// get all files from a commit as path: hash key value pairs
-	const objectBundle = createObjectBundle(filesystem)
 	const treeBundle = createTreeBundle(filesystem)
-
-	if (id === null) {
-		return {}
-	}
-
-	const commit = objectBundle.get(id)
 
 	const tree = treeBundle.unpack(commit.tree)
 
 	return deflate(tree)
 }
 
-export const createCommit = (filesystem) => (parents) => (author) => (message) => (stage) => {
+export const commit = (filesystem) => (parents) => (author) => (message) => (stage) => {
 	if (stage.add.length === 0 && stage.remove.length === 0) {
 		throw new Error('Nothing to commit')
 	}
@@ -32,7 +25,7 @@ export const createCommit = (filesystem) => (parents) => (author) => (message) =
 
 	// for each parent, apply changes
 	parents.forEach((id, index) => {
-		const parentCommit = objectBundle.get(id)
+		const parentCommit = getCommit(filesystem)(id)
 		const parentFiles = deflate(treeBundle.unpack(parentCommit.tree))
 
 		// remove files from tree if not in parent
@@ -74,15 +67,39 @@ export const createCommit = (filesystem) => (parents) => (author) => (message) =
 
 	const id = hashString(serialize(commit))
 
-	objectBundle.set(id)(commit)
+	setCommit(filesystem)(id)(commit)
 
 	return id
+}
+
+export const getCommit = (filesystem) => (id) => {
+	if (id === null) {
+		throw new Error('Invalid commit id')
+	}
+
+	const objectBundle = createObjectBundle(filesystem)
+
+	return objectBundle.get(id)
+}
+
+export const setCommit = (filesystem) => (id) => (contents) => {
+	const objectBundle = createObjectBundle(filesystem)
+
+	return objectBundle.set(id)(contents)
 }
 
 export const createBundle = (filesystem) => {
 	return {
 		getFiles: getCommitFiles(filesystem),
 
-		create: createCommit(filesystem),
+		get: getCommit(filesystem),
+
+		set: setCommit(filesystem),
+
+		commit: commit(filesystem)
 	}
+}
+
+export default {
+	getCommit
 }

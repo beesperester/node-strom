@@ -1,5 +1,6 @@
 import fs from 'fs'
 import crypto from 'crypto'
+import { serialize } from './serialization'
 
 export const hashString = (string) => crypto.createHash('sha256').update(string).digest('hex')
 
@@ -45,3 +46,25 @@ export const pathFromHash = (length) => (depth) => (hash) => {
 }
 
 export const hashPath = pathFromHash(2)(2)
+
+export const hashMap = (branch) => (mapBranch) => (mapLeaf) => (callback) => {
+	const hashMapRecursive = (branch) => {
+		const tree = {}
+
+		for (let key of Object.keys(branch)) {
+			if (typeof branch[key] === 'object') {
+				tree[key] = mapBranch(hashMapRecursive(branch[key]))
+			} else {
+				tree[key] = mapLeaf(branch[key])
+			}
+		}
+
+		const hash = hashString(serialize(tree))
+
+		callback.call(undefined, hash, tree)
+
+		return hash
+	}
+
+	return hashMapRecursive(branch)
+}
