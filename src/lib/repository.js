@@ -1,11 +1,11 @@
 import path from 'path'
+import { createBundle as createAuthorBundle } from './author'
 import { createBundle as createBranchBundle } from './branch'
 import { createBundle as createCommitBundle } from './commit'
 import { paths } from './config'
 import { createBundle as createObjectBundle } from './object'
-import { createBundle as createReferenceBundle } from './reference'
+import { createBundle as createReferenceBundle, referenceTypes } from './reference'
 import { createBundle as createStageBundle } from './stage'
-import { createBundle as createAuthorBundle } from './author'
 import { getFilesDifference } from './utilities/difference'
 import { buildWorkingDirectoryPath, createBundle as createWorkingDirectoryBundle } from './workingDirectory'
 
@@ -134,13 +134,40 @@ export const stageRepository = (filesystem) => (files) => {
 	})
 }
 
-export const createBundle = (filesystem) => {
+export const unstageRepository = (filesystem) => (files) => {
 	// initilaize stage bundle
 	const stageBundle = createStageBundle(filesystem)
+
+	stageBundle.unstage(files)
+}
+
+export const getRepositoryHead = (filesystem) => {
+	// initilaize reference bundle
+	const referenceBundle = createReferenceBundle(filesystem)
+
+	return referenceBundle.getHead()
+}
+
+export const getRepositoryTag = (filesystem) => (tagName) => {
+	// initilaize reference bundle
+	const referenceBundle = createReferenceBundle(filesystem)
+
+	return referenceBundle.getTag(tagName)
+}
+
+export const checkoutRepository = (filesystem) => (branchName) => {
+	// initilaize branch bundle
+	const branchBundle = createBranchBundle(filesystem)
 
 	// initilaize reference bundle
 	const referenceBundle = createReferenceBundle(filesystem)
 
+	branchBundle.checkout(branchName)
+
+	referenceBundle.setHead(referenceTypes.branch)(branchName)
+}
+
+export const createBundle = (filesystem) => {
 	return {
 		/**
 		 * Initialize repository by creating necessary 
@@ -159,7 +186,7 @@ export const createBundle = (filesystem) => {
 		 * New branch should point to head commit.
 		 * Update head accordingly.
 		 */
-		checkout: (branchName) => { },
+		checkout: checkoutRepository(filesystem),
 
 		/**
 		 * Stage files by getting latest state and 
@@ -170,7 +197,7 @@ export const createBundle = (filesystem) => {
 		/**
 		 * Unstage files.
 		 */
-		unstage: stageBundle.unstage,
+		unstage: unstageRepository(filesystem),
 
 		/** Commit files by creating a new commit from 
 		 * staged files and head commit. 
@@ -181,12 +208,12 @@ export const createBundle = (filesystem) => {
 		 * Get head commit of repository by following the head reference path.
 		 * This is sugar for usgin reference('head')
 		 */
-		getHead: referenceBundle.getHead,
+		getHead: () => getRepositoryHead(filesystem),
 
 		/** 
 		 * Get commit by tag.
 		 */
-		getTag: referenceBundle.getTag,
+		getTag: getRepositoryTag(filesystem),
 
 		buildPath: () => buildRepositoryPath(filesystem)
 	}

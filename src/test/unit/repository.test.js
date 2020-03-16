@@ -118,4 +118,18 @@ describe('tests repository bundle', function () {
 			expect(received).to.deep.equal(expected)
 		})
 	})
+
+	describe('repository.checkout', function () {
+		it('checkout repository', function () {
+			repository.checkout('development')
+
+			const received = repository.getHead()
+			const expected = {
+				type: 'branch',
+				reference: 'development'
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+	})
 })
