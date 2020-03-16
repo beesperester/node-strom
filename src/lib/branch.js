@@ -1,5 +1,5 @@
 import path from 'path'
-import { getRepositoryDirectory } from './repository'
+import { getRepositoryDirectory } from './repository.old'
 import { serialize, deserialize } from './utilities/serialization'
 
 export const getBranchesDirectory = () => {

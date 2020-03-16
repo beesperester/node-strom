@@ -1,5 +1,5 @@
 import path from 'path'
-import { getRepositoryDirectory } from './repository'
+import { getRepositoryDirectory } from './repository.old'
 import { hashPath } from './utilities/hashing'
 import { deserialize, serialize } from './utilities/serialization'
 

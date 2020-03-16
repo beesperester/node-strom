@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node -r esm node_modules/.bin/mocha --timeout 999999 --colors src/test/**/*.test.js --exit"
+    "test": "node -r esm node_modules/.bin/mocha --timeout 999999 --colors src/test/**/*.test.js --exit",
+    "run": "node -r esm src/cli/index.js"
   },
   "repository": {
     "type": "git",

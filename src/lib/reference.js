@@ -1,7 +1,7 @@
 import path from 'path'
 import { getBranch, getBranchesDirectory, setBranch } from './branch'
 import { getCommitsDirectory } from './commit'
-import { getRepositoryDirectory } from './repository'
+import { getRepositoryDirectory } from './repository.old'
 import { deserialize, serialize } from './utilities/serialization'
 
 export const getReferencesDirectory = () => {
