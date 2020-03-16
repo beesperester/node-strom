@@ -2,6 +2,7 @@ import path from 'path'
 import { paths } from './config'
 import { buildRepositoryPath } from './repository'
 import { serialize, deserialize } from './utilities/serialization'
+import { createBundle as createReferenceBundle } from './reference'
 
 export const buildBranchPath = (filesystem) => {
 	return path.join(
@@ -54,6 +55,23 @@ export const setBranch = (filesystem) => (name) => (id) => {
 	return name
 }
 
+export const checkoutBranch = (filesystem) => (branchName) => {
+	if (getBranches(filesystem).includes(branchName)) {
+		const branch = getBranch(filesystem)(branchName)
+
+		return branch.commit
+	} else {
+		// initialize reference bundle
+		const referenceBundle = createReferenceBundle(filesystem)
+		const head = referenceBundle.getHead()
+		const commitId = referenceBundle.getCommitId(head)
+
+		setBranch(filesystem)(branchName)(commitId)
+
+		return commitId
+	}
+}
+
 export const createBundle = (filesystem) => {
 	return {
 		init: () => initBranch(filesystem),
@@ -63,6 +81,8 @@ export const createBundle = (filesystem) => {
 		get: getBranch(filesystem),
 
 		set: setBranch(filesystem),
+
+		checkout: checkoutBranch(filesystem),
 
 		buildPath: () => buildBranchPath(filesystem)
 	}

@@ -18,29 +18,29 @@ export const buildRepositoryPath = (filesystem) => {
 
 export const initRepository = (filesystem) => {
 	/**
-	 * Initilaize Repository structure.
+	 * initialize Repository structure.
 	 * 
 	 * @argument filesystem
 	 * 
 	 * @returns void
 	 */
 
-	// initilaize object bundle
+	// initialize object bundle
 	const objectBundle = createObjectBundle(filesystem)
 
 	objectBundle.init()
 
-	// initilaize reference bundle
+	// initialize reference bundle
 	const referenceBundle = createReferenceBundle(filesystem)
 
 	referenceBundle.init()
 
-	// initilaize branch bundle
+	// initialize branch bundle
 	const branchBundle = createBranchBundle(filesystem)
 
 	branchBundle.init()
 
-	// initilaize stage bundle
+	// initialize stage bundle
 	const stageBundle = createStageBundle(filesystem)
 
 	stageBundle.init()
@@ -56,7 +56,7 @@ export const getRepositoryState = (filesystem) => {
 	 * @returns object
 	*/
 
-	// initilaize bundles
+	// initialize bundles
 	const referenceBundle = createReferenceBundle(filesystem)
 	const workingDirectoryBundle = createWorkingDirectoryBundle(filesystem)
 
@@ -78,13 +78,13 @@ export const getRepositoryState = (filesystem) => {
 }
 
 export const commitRepository = (filesystem) => (message) => {
-	// initilaize stage bundle
+	// initialize stage bundle
 	const stageBundle = createStageBundle(filesystem)
 
-	// initilaize reference bundle
+	// initialize reference bundle
 	const referenceBundle = createReferenceBundle(filesystem)
 
-	// initilaize commit bundle
+	// initialize commit bundle
 	const commitBundle = createCommitBundle(filesystem)
 
 	// initiliaze author bundle
@@ -120,7 +120,7 @@ export const stageRepository = (filesystem) => (files) => {
 	// adds file to stage by checking which action needs to be taken
 	// depending on added, modified or removed modifier
 
-	// initilaize stage bundle
+	// initialize stage bundle
 	const stageBundle = createStageBundle(filesystem)
 
 	const state = getRepositoryState(filesystem)
@@ -135,31 +135,31 @@ export const stageRepository = (filesystem) => (files) => {
 }
 
 export const unstageRepository = (filesystem) => (files) => {
-	// initilaize stage bundle
+	// initialize stage bundle
 	const stageBundle = createStageBundle(filesystem)
 
 	stageBundle.unstage(files)
 }
 
 export const getRepositoryHead = (filesystem) => {
-	// initilaize reference bundle
+	// initialize reference bundle
 	const referenceBundle = createReferenceBundle(filesystem)
 
 	return referenceBundle.getHead()
 }
 
 export const getRepositoryTag = (filesystem) => (tagName) => {
-	// initilaize reference bundle
+	// initialize reference bundle
 	const referenceBundle = createReferenceBundle(filesystem)
 
 	return referenceBundle.getTag(tagName)
 }
 
 export const checkoutRepository = (filesystem) => (branchName) => {
-	// initilaize branch bundle
+	// initialize branch bundle
 	const branchBundle = createBranchBundle(filesystem)
 
-	// initilaize reference bundle
+	// initialize reference bundle
 	const referenceBundle = createReferenceBundle(filesystem)
 
 	branchBundle.checkout(branchName)
