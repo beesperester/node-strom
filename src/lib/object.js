@@ -1,17 +1,18 @@
 import path from 'path'
-import { getRepositoryDirectory } from './repository.old'
+import { paths } from './config'
+import { buildRepositoryPath } from './repository'
 import { hashPath } from './utilities/hashing'
 import { deserialize, serialize } from './utilities/serialization'
 
-export const getObjectsDirectory = () => {
-	return 'objects'
+export const buildObjectPath = (filesystem) => {
+	return path.join(
+		buildRepositoryPath(filesystem),
+		paths.object
+	)
 }
 
-export const initObjects = (filesystem) => {
-	const objectsDirectory = path.join(
-		getRepositoryDirectory(),
-		getObjectsDirectory()
-	)
+export const initObject = (filesystem) => {
+	const objectsDirectory = buildObjectPath(filesystem)
 
 	if (!filesystem.isDir(objectsDirectory)) {
 		filesystem.mkdir(objectsDirectory)
@@ -21,8 +22,7 @@ export const initObjects = (filesystem) => {
 export const getObject = (filesystem) => (id) => {
 	return deserialize(filesystem.read(
 		path.join(
-			getRepositoryDirectory(),
-			getObjectsDirectory(),
+			buildObjectPath(filesystem),
 			hashPath(id)
 		)
 	))
@@ -31,8 +31,7 @@ export const getObject = (filesystem) => (id) => {
 export const setObject = (filesystem) => (id) => (content) => {
 	filesystem.write(
 		path.join(
-			getRepositoryDirectory(),
-			getObjectsDirectory(),
+			buildObjectPath(filesystem),
 			hashPath(id)
 		)
 	)(serialize(content))
@@ -41,8 +40,7 @@ export const setObject = (filesystem) => (id) => (content) => {
 export const copyObject = (filesystem) => (file) => (id) => {
 	filesystem.copy(file)(
 		path.join(
-			getRepositoryDirectory(),
-			getObjectsDirectory(),
+			buildObjectPath(filesystem),
 			hashPath(id)
 		)
 	)
@@ -50,13 +48,11 @@ export const copyObject = (filesystem) => (file) => (id) => {
 
 export const createBundle = (filesystem) => {
 	return {
-		init: () => initObjects(filesystem),
+		init: () => initObject(filesystem),
 
 		get: getObject(filesystem),
 
 		set: setObject(filesystem),
-
-		getDirectory: getObjectsDirectory,
 
 		copy: copyObject(filesystem)
 	}

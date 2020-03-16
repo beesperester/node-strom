@@ -2,11 +2,15 @@ import * as errors from '../errors'
 import { addLeaf, getLeaf, removeLeaf, deflate, copyDeep } from '../../utilities/map'
 import { hashString } from '../../utilities/hashing'
 
-export const createAdapter = (storage) => {
+export const createBundle = (storage) => {
 	let clone = copyDeep(storage)
 
 	return {
 		state: () => copyDeep(clone),
+
+		getRootDirectory: () => {
+			return ''
+		},
 
 		walk: (file) => {
 			return Object.keys(

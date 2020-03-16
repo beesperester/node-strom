@@ -1,5 +1,6 @@
 import path from 'path'
-import { getRepositoryDirectory } from './repository.old'
+import { paths } from './config'
+import { buildRepositoryPath } from './repository'
 import { serialize, deserialize } from './utilities/serialization'
 
 export const stageAddedFile = (filesystem) => (file) => {
@@ -51,38 +52,26 @@ export const stageRemovedFile = (filesystem) => (file) => {
 export const getStage = (filesystem) => {
 	return deserialize(
 		filesystem.read(
-			path.join(
-				getRepositoryDirectory(),
-				getStageFile()
-			)
+			buildStagePath(filesystem)
 		)
 	)
 }
 
 export const setStage = (filesystem) => (state) => {
 	filesystem.write(
-		path.join(
-			getRepositoryDirectory(),
-			getStageFile()
-		)
+		buildStagePath(filesystem)
 	)(serialize(state))
 }
 
-export const getStageFile = () => {
-	return 'stage'
-}
-
-export const stageIncludes = (filesystem) => (file) => {
-	return getStage(filesystem).includes(file)
+export const buildStagePath = (filesystem) => {
+	return path.join(
+		buildRepositoryPath(filesystem),
+		paths.stage
+	)
 }
 
 export const initStage = (filesystem) => {
-	const stageFile = path.join(
-		getRepositoryDirectory(),
-		getStageFile()
-	)
-
-	if (!filesystem.isFile(stageFile)) {
+	if (!filesystem.isFile(buildStagePath(filesystem))) {
 		resetStage(filesystem)
 	}
 }
@@ -106,8 +95,6 @@ export const createBundle = (filesystem) => {
 
 		unstage: unstageFile(filesystem),
 
-		stageRemoved: stageRemovedFile(filesystem),
-
-		includes: stageIncludes(filesystem)
+		stageRemoved: stageRemovedFile(filesystem)
 	}
 }

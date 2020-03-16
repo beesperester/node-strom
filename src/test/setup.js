@@ -1,4 +1,4 @@
-import { serialize } from '../../lib/utilities/serialization'
+import { serialize } from '../lib/utilities/serialization'
 
 export const workingDirectory = {
 	'setup-cinema4d/model_main.c4d': serialize('contents of model_main.c4d'),

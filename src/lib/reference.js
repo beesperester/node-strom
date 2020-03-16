@@ -1,27 +1,51 @@
 import path from 'path'
-import { getBranch, getBranchesDirectory, setBranch } from './branch'
-import { getCommitsDirectory } from './commit'
-import { getRepositoryDirectory } from './repository.old'
+import { getBranchesDirectory } from './branch'
+import { paths } from './config'
+import { buildRepositoryPath } from './repository'
 import { deserialize, serialize } from './utilities/serialization'
 
-export const getReferencesDirectory = () => {
-	return 'refs'
+export const referenceTypes = {
+	branch: 'branch',
+	commit: 'commit'
 }
 
-export const initReferences = (filesystem) => {
-	const referencesDirectory = path.join(
-		getRepositoryDirectory(),
-		getReferencesDirectory()
+export const buildReferencePath = (filesystem) => {
+	return path.join(
+		buildRepositoryPath(filesystem),
+		paths.reference
 	)
+}
 
-	if (!filesystem.isDir(referencesDirectory)) {
-		filesystem.mkdir(referencesDirectory)
-	}
+export const buildTagPath = (filesystem) => {
+	return path.join(
+		buildReferencePath(filesystem),
+		paths.tag
+	)
+}
+
+export const buildHeadPath = (filesystem) => {
+	return path.join(
+		buildReferencePath(filesystem),
+		paths.head
+	)
+}
+
+export const initReference = (filesystem) => {
+	const referenceDirectories = [
+		buildReferencePath(filesystem),
+		buildTagPath(filesystem)
+	]
+
+	referenceDirectories.forEach((directory) => {
+		if (!filesystem.isDir(directory)) {
+			filesystem.mkdir(directory)
+		}
+	})
 
 	try {
-		getReference(filesystem)('head')
+		getHead(filesystem)
 	} catch (e) {
-		setReference(filesystem)('head')(
+		setHead(filesystem)(referenceTypes.branch)(
 			path.join(
 				getBranchesDirectory(),
 				'master'
@@ -30,86 +54,66 @@ export const initReferences = (filesystem) => {
 	}
 }
 
-export const getReferences = (filesystem) => {
+export const getTags = (filesystem) => {
 	return filesystem.lsdir(
-		path.join(
-			getRepositoryDirectory(),
-			getReferencesDirectory()
-		)
+		buildTagPath(filesystem)
 	)
 }
 
-export const getReference = (filesystem) => (name) => {
+export const getTag = (filesystem) => (name) => {
 	return deserialize(
 		filesystem.read(
-			path.join(
-				getRepositoryDirectory(),
-				getReferencesDirectory(),
-				name
-			)
+			buildTagPath(filesystem),
+			name
 		)
 	)
 }
 
-export const setReference = (filesystem) => (name) => (referencePath) => {
+export const setTag = (filesystem) => (name) => (id) => {
 	const contents = {
-		reference: referencePath
+		type: referenceTypes.commit,
+		reference: id
 	}
 
 	filesystem.write(
 		path.join(
-			getRepositoryDirectory(),
-			getReferencesDirectory(),
+			buildTagPath(filesystem),
 			name
 		)
 	)(serialize(contents))
 }
 
-export const updateReference = (filesystem) => (name) => (referencePath) => {
-	const reference = getReference(filesystem)(name)
-
-	if (reference.reference.startsWith(getBranchesDirectory())) {
-		// reference points to a branch
-		// update branch
-		setBranch(filesystem)(path.basename(reference.reference))(referencePath)
-	} else if (reference.reference.startsWith(getCommitsDirectory())) {
-		// reference points to a commit
-		// update reference
-		setReference(filesystem)(name)(
-			path.join(
-				getCommitsDirectory(),
-				referencePath
-			)
+export const getHead = (filesystem) => {
+	return deserialize(
+		filesystem.read(
+			buildHeadPath(filesystem)
 		)
-	}
+	)
 }
 
-export const resolve = (filesystem) => (reference) => {
-	if (reference.reference.startsWith(getBranchesDirectory())) {
-		// reference points to a branch
-		return getBranch(filesystem)(path.basename(reference.reference)).commit
-	} else if (reference.reference.startsWith(getCommitsDirectory())) {
-		// reference points to a commit
-		return path.basename(reference.reference)
+export const setHead = (filesystem) => (referenceType) => (referencePath) => {
+	const contents = {
+		type: referenceType,
+		reference: referencePath
 	}
 
-	throw new Error('Unable to resolve reference')
+	filesystem.write(
+		buildHeadPath(filesystem)
+	)(serialize(contents))
 }
 
 export const createBundle = (filesystem) => {
 	return {
-		init: () => initReferences(filesystem),
+		init: () => initReference(filesystem),
 
-		getAll: () => getReferences(filesystem),
+		getTags: () => getTags(filesystem),
 
-		get: getReference(filesystem),
+		getTag: getTag(filesystem),
 
-		getHead: () => getReference(filesystem)('head'),
+		setTag: setTag(filesystem),
 
-		resolve: resolve(filesystem),
+		getHead: () => getHead(filesystem),
 
-		update: updateReference(filesystem),
-
-		updateHead: updateReference(filesystem)('head')
+		setHead: setHead(filesystem)
 	}
 }

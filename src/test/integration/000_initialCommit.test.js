@@ -19,8 +19,8 @@ describe.skip('tests repository base functionality', function () {
 		}
 	}
 
-	const adapter = strom.lib.filesystem.adapters.memory.createAdapter(storage)
-	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
+	const adapter = strom.lib.filesystem.adapters.memory.createBundle(storage)
+	const filesystem = strom.lib.filesystem.createBundle(adapter)
 	const repository = strom.lib.repository.createBundle(filesystem)
 
 	describe('repository.init', function () {

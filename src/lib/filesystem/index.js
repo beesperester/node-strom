@@ -1,8 +1,12 @@
 import adapters from './adapters'
 
-export const createFilesystem = (adapter) => {
+export const createBundle = (adapter) => {
 	return {
 		adapter,
+
+		getRootDirectory: () => {
+			return adapter.getRootDirectory()
+		},
 
 		walk: (file) => {
 			return adapter.walk(file)
