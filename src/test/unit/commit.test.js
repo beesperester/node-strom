@@ -1,7 +1,7 @@
 // Test related imports.
 import { expect } from 'chai'
 import 'chai/register-expect'
-import { describe, it } from 'mocha'
+import { describe, it, beforeEach } from 'mocha'
 import strom from '../../index'
 import { getBlobPath, getTreePath } from '../../lib/tree'
 import { noop } from '../../lib/utilities'
@@ -9,12 +9,24 @@ import { hashMap } from '../../lib/utilities/hashing'
 import { inflate } from '../../lib/utilities/map'
 import * as setup from '../setup'
 
+let filesystem, adapter, storage
+
+const createFilesystem = () => {
+	const result = setup.createFilesystem()
+
+	filesystem = result.filesystem
+	adapter = result.adapter
+	storage = result.storage
+}
+
 describe('unit/commit', function () {
-	const { filesystem } = setup.createFilesystem()
-
-	strom.lib.repository.initRepository(filesystem)
-
 	describe('commit', function () {
+		beforeEach(function () {
+			createFilesystem()
+
+			strom.lib.repository.initRepository(filesystem)
+		})
+
 		it('succeeds', function () {
 			strom.lib.stage.stageFiles(filesystem)([
 				'setup-cinema4d/model_main.c4d'

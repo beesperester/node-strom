@@ -1,7 +1,7 @@
 // Test related imports.
 import { expect } from 'chai'
 import 'chai/register-expect'
-import { describe, it } from 'mocha'
+import { describe, it, beforeEach } from 'mocha'
 import strom from '../../index'
 import { getBlobPath, getTreePath } from '../../lib/tree'
 import { noop } from '../../lib/utilities'
@@ -10,10 +10,24 @@ import { inflate } from '../../lib/utilities/map'
 import { serialize } from '../../lib/utilities/serialization'
 import * as setup from '../setup'
 
-describe('unit/repository', function () {
-	const { storage, filesystem } = setup.createFilesystem()
+let filesystem, adapter, storage
 
+const createFilesystem = () => {
+	const result = setup.createFilesystem()
+
+	filesystem = result.filesystem
+	adapter = result.adapter
+	storage = result.storage
+}
+
+describe('unit/repository', function () {
 	describe('initRepository', function () {
+		beforeEach(function () {
+			createFilesystem()
+
+			strom.lib.repository.initRepository(filesystem)
+		})
+
 		it('succeeds', function () {
 			/**
 			 * creates neccessary directories and files if missing,
