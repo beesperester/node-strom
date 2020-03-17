@@ -3,10 +3,10 @@ import { expect } from 'chai'
 import 'chai/register-expect'
 import { describe, it } from 'mocha'
 import strom from '../../index'
-import { getFilesystem } from '../setup'
+import * as setup from '../setup'
 
 describe('unit/reference', function () {
-	const { filesystem } = getFilesystem()
+	const { filesystem } = setup.createFilesystem()
 
 	strom.lib.repository.initRepository(filesystem)
 

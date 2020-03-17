@@ -15,7 +15,7 @@ export const workingDirectory = {
 	'setup-houdini/shading_main.hip': serialize('contents of shading_main.hip')
 }
 
-export const getFilesystem = () => {
+export const createFilesystem = () => {
 	const storage = strom.lib.utilities.map.inflate(workingDirectory)
 	const adapter = strom.lib.filesystem.adapters.memory.createAdapter(storage)
 	const filesystem = strom.lib.filesystem.createFilesystem(adapter)

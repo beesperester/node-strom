@@ -3,10 +3,10 @@ import { expect } from 'chai'
 import 'chai/register-expect'
 import { describe, it } from 'mocha'
 import strom from '../../index'
-import { getFilesystem, workingDirectory } from '../setup'
+import * as setup from '../setup'
 
 describe('unit/workingDirectory', function () {
-	const { filesystem } = getFilesystem()
+	const { filesystem } = setup.createFilesystem()
 
 	strom.lib.repository.initRepository(filesystem)
 
@@ -14,7 +14,7 @@ describe('unit/workingDirectory', function () {
 		it('succeeds', function () {
 			const received = strom.lib.workingDirectory.getState(filesystem)
 			const expected = {
-				added: Object.keys(workingDirectory),
+				added: Object.keys(setup.workingDirectory),
 				modified: [],
 				removed: []
 			}

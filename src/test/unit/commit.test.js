@@ -7,10 +7,10 @@ import { getBlobPath, getTreePath } from '../../lib/tree'
 import { noop } from '../../lib/utilities'
 import { hashMap } from '../../lib/utilities/hashing'
 import { inflate } from '../../lib/utilities/map'
-import { getFilesystem } from '../setup'
+import * as setup from '../setup'
 
 describe('unit/commit', function () {
-	const { filesystem } = getFilesystem()
+	const { filesystem } = setup.createFilesystem()
 
 	strom.lib.repository.initRepository(filesystem)
 

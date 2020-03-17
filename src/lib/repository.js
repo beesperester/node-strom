@@ -33,20 +33,20 @@ export const initRepository = (filesystem) => {
 	stageModule.initStage(filesystem)
 }
 
+export const getRepositoryCommitId = (filesystem) => {
+	const head = referenceModule.getHead(filesystem)
+
+	return referenceModule.getReferenceCommitId(filesystem)(head)
+}
+
 export const commitRepository = (filesystem) => (message) => {
 	const parents = []
 	const author = authorModule.createAuthor('Bernhard Esperester')('bernhard@esperester.de')
 
-	const head = referenceModule.getHead(filesystem)
+	const commitId = getRepositoryCommitId(filesystem)
 
-	try {
-		const commitId = referenceModule.getCommitId(filesystem)(head)
-
-		if (commitId) {
-			parents.push(commitId)
-		}
-	} catch (e) {
-		//
+	if (commitId) {
+		parents.push(commitId)
 	}
 
 	const id = commitModule.commit(filesystem)(parents)(author)(message)

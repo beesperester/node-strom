@@ -8,10 +8,10 @@ import { noop } from '../../lib/utilities'
 import { hashMap } from '../../lib/utilities/hashing'
 import { inflate } from '../../lib/utilities/map'
 import { serialize } from '../../lib/utilities/serialization'
-import { getFilesystem } from '../setup'
+import * as setup from '../setup'
 
 describe('unit/repository', function () {
-	const { storage, filesystem } = getFilesystem()
+	const { storage, filesystem } = setup.createFilesystem()
 
 	describe('initRepository', function () {
 		it('succeeds', function () {

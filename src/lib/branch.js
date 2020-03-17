@@ -67,8 +67,10 @@ export const checkoutBranch = (filesystem) => (branchName) => {
 		// test if files from branch commit conflict with working directory
 		const state = workingDirectoryModule.getState(filesystem)
 
-		if (state.added.length > 0 || state.modified.length > 0 || state.removed.length > 0) {
-			throw new Error('You have uncommitted changes in your working directory')
+		if (commitId) {
+			if (state.added.length > 0 || state.modified.length > 0 || state.removed.length > 0) {
+				throw new Error('You have uncommitted changes in your working directory')
+			}
 		}
 	} else {
 		const head = referenceModule.getHead(filesystem)

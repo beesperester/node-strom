@@ -62,16 +62,15 @@ export const getState = (filesystem) => {
 	*/
 
 	// get head reference
-	const head = referenceModule.getHead(filesystem)
 	const workingDirectoryFiles = getWorkingDirectoryFiles(filesystem)
 	let commitFiles = {}
 
-	try {
-		const commit = referenceModule.getCommit(filesystem)(head)
+	const commitId = repositoryModule.getRepositoryCommitId(filesystem)
 
-		commitFiles = commitModule.getFiles(filesystem)(commit)
-	} catch (e) {
-		//
+	if (commitId) {
+		const commit = commitModule.getCommit(filesystem)(commitId)
+
+		commitFiles = commitModule.getCommitFiles(filesystem)(commit)
 	}
 
 	return getFilesDifference(workingDirectoryFiles)(commitFiles)
