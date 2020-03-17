@@ -8,12 +8,10 @@ import { noop } from '../../lib/utilities'
 import { hashMap } from '../../lib/utilities/hashing'
 import { inflate } from '../../lib/utilities/map'
 import { serialize } from '../../lib/utilities/serialization'
-import { workingDirectory } from '../setup'
+import { getFilesystem } from '../setup'
 
-describe('tests repository', function () {
-	const storage = inflate(workingDirectory)
-	const adapter = strom.lib.filesystem.adapters.memory.createAdapter(storage)
-	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
+describe('unit/repository', function () {
+	const { storage, filesystem } = getFilesystem()
 
 	describe('repository', function () {
 		it('initRepository', function () {
@@ -60,19 +58,6 @@ describe('tests repository', function () {
 		})
 	})
 
-	describe('workingDirectory', function () {
-		it('getState', function () {
-			const received = strom.lib.workingDirectory.getState(filesystem)
-			const expected = {
-				added: Object.keys(workingDirectory),
-				modified: [],
-				removed: []
-			}
-
-			expect(received).to.deep.equal(expected)
-		})
-	})
-
 	describe('repository', function () {
 		it('commitRepository', function () {
 			strom.lib.stage.stageFiles(filesystem)([
@@ -96,32 +81,6 @@ describe('tests repository', function () {
 				tree: hashMap(
 					tree
 				)(getTreePath)(getBlobPath)(noop)
-			}
-
-			expect(received).to.deep.equal(expected)
-		})
-	})
-
-	describe('reference', function () {
-		it('getHead', function () {
-			const received = strom.lib.reference.getHead(filesystem)
-			const expected = {
-				type: 'branch',
-				reference: 'master'
-			}
-
-			expect(received).to.deep.equal(expected)
-		})
-	})
-
-	describe('branch', function () {
-		it('checkoutBranch', function () {
-			strom.lib.branch.checkoutBranch(filesystem)('development')
-
-			const received = strom.lib.reference.getHead(filesystem)
-			const expected = {
-				type: 'branch',
-				reference: 'development'
 			}
 
 			expect(received).to.deep.equal(expected)

@@ -1,4 +1,5 @@
 import { serialize } from '../lib/utilities/serialization'
+import strom from '../index'
 
 export const workingDirectory = {
 	'setup-cinema4d/model_main.c4d': serialize('contents of model_main.c4d'),
@@ -13,3 +14,16 @@ export const workingDirectory = {
 	'setup-houdini/lighting_main.hip': serialize('contents of lighting_main.hip'),
 	'setup-houdini/shading_main.hip': serialize('contents of shading_main.hip')
 }
+
+export const getFilesystem = () => {
+	const storage = strom.lib.utilities.map.inflate(workingDirectory)
+	const adapter = strom.lib.filesystem.adapters.memory.createAdapter(storage)
+	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
+
+	return {
+		storage,
+		adapter,
+		filesystem
+	}
+}
+
