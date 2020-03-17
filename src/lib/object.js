@@ -1,12 +1,12 @@
 import path from 'path'
 import { paths } from './config'
-import { buildRepositoryPath } from './repository'
+import * as repositoryModule from './repository'
 import { hashPath } from './utilities/hashing'
 import { deserialize, serialize } from './utilities/serialization'
 
 export const buildObjectPath = (filesystem) => {
 	return path.join(
-		buildRepositoryPath(filesystem),
+		repositoryModule.buildRepositoryPath(filesystem),
 		paths.object
 	)
 }
@@ -44,16 +44,4 @@ export const copyObject = (filesystem) => (file) => (id) => {
 			hashPath(id)
 		)
 	)
-}
-
-export const createBundle = (filesystem) => {
-	return {
-		init: () => initObject(filesystem),
-
-		get: getObject(filesystem),
-
-		set: setObject(filesystem),
-
-		copy: copyObject(filesystem)
-	}
 }

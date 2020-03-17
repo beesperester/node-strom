@@ -8,20 +8,15 @@ import { noop } from '../../lib/utilities'
 import { hashMap } from '../../lib/utilities/hashing'
 import { inflate } from '../../lib/utilities/map'
 import { serialize } from '../../lib/utilities/serialization'
-import { createBundle as createWorkingDirectoryBundle } from '../../lib/workingDirectory'
 import { workingDirectory } from '../setup'
 
-
-describe('tests repository bundle', function () {
+describe('tests repository', function () {
 	const storage = inflate(workingDirectory)
-	const adapter = strom.lib.filesystem.adapters.memory.createBundle(storage)
-	const filesystem = strom.lib.filesystem.createBundle(adapter)
-	const repository = strom.lib.repository.createBundle(filesystem)
+	const adapter = strom.lib.filesystem.adapters.memory.createAdapter(storage)
+	const filesystem = strom.lib.filesystem.createFilesystem(adapter)
 
-	const workingDirectoryBundle = createWorkingDirectoryBundle(filesystem)
-
-	describe('repository.init', function () {
-		it('creates repository structure', function () {
+	describe('repository', function () {
+		it('initRepository', function () {
 			/**
 			 * creates neccessary directories and files if missing,
 			 * creates master branch if missing
@@ -34,7 +29,7 @@ describe('tests repository bundle', function () {
 			 * 	|- branches
 			 * 		|- master
 			*/
-			repository.init()
+			strom.lib.repository.initRepository(filesystem)
 
 			const received = filesystem.adapter.state()
 			const expected = {
@@ -65,9 +60,9 @@ describe('tests repository bundle', function () {
 		})
 	})
 
-	describe('repository.getState', function () {
-		it('gets state of working directory', function () {
-			const received = repository.getState()
+	describe('workingDirectory', function () {
+		it('getState', function () {
+			const received = strom.lib.workingDirectory.getState(filesystem)
 			const expected = {
 				added: Object.keys(workingDirectory),
 				modified: [],
@@ -78,16 +73,16 @@ describe('tests repository bundle', function () {
 		})
 	})
 
-	describe('repository.commit', function () {
-		it('commit stage', function () {
-			repository.stage([
+	describe('repository', function () {
+		it('commitRepository', function () {
+			strom.lib.stage.stageFiles(filesystem)([
 				'setup-cinema4d/model_main.c4d'
 			])
 
-			const commitId = repository.commit('initial commit')
+			const commitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
 
 			const tree = inflate(
-				workingDirectoryBundle.getFile('setup-cinema4d/model_main.c4d')
+				strom.lib.workingDirectory.getWorkingDirectoryFile(filesystem)('setup-cinema4d/model_main.c4d')
 			)
 
 			const received = strom.lib.commit.getCommit(filesystem)(commitId)
@@ -107,9 +102,9 @@ describe('tests repository bundle', function () {
 		})
 	})
 
-	describe('repository.getHead', function () {
-		it('gets head of repository', function () {
-			const received = repository.getHead()
+	describe('reference', function () {
+		it('getHead', function () {
+			const received = strom.lib.reference.getHead(filesystem)
 			const expected = {
 				type: 'branch',
 				reference: 'master'
@@ -119,11 +114,11 @@ describe('tests repository bundle', function () {
 		})
 	})
 
-	describe('repository.checkout', function () {
-		it('checkout repository', function () {
-			repository.checkout('development')
+	describe('branch', function () {
+		it('checkoutBranch', function () {
+			strom.lib.branch.checkoutBranch(filesystem)('development')
 
-			const received = repository.getHead()
+			const received = strom.lib.reference.getHead(filesystem)
 			const expected = {
 				type: 'branch',
 				reference: 'development'

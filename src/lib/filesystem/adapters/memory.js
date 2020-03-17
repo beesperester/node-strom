@@ -2,7 +2,7 @@ import * as errors from '../errors'
 import { addLeaf, getLeaf, removeLeaf, deflate, copyDeep } from '../../utilities/map'
 import { hashString } from '../../utilities/hashing'
 
-export const createBundle = (storage) => {
+export const createAdapter = (storage) => {
 	let clone = copyDeep(storage)
 
 	return {

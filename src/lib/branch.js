@@ -1,12 +1,13 @@
 import path from 'path'
 import { paths } from './config'
-import { buildRepositoryPath } from './repository'
-import { serialize, deserialize } from './utilities/serialization'
-import { createBundle as createReferenceBundle } from './reference'
+import * as referenceModule from './reference'
+import * as repositoryModule from './repository'
+import { deserialize, serialize } from './utilities/serialization'
+import * as workingDirectoryModule from './workingDirectory'
 
 export const buildBranchPath = (filesystem) => {
 	return path.join(
-		buildRepositoryPath(filesystem),
+		repositoryModule.buildRepositoryPath(filesystem),
 		paths.branch
 	)
 }
@@ -56,34 +57,22 @@ export const setBranch = (filesystem) => (name) => (id) => {
 }
 
 export const checkoutBranch = (filesystem) => (branchName) => {
+	let commitId
+
 	if (getBranches(filesystem).includes(branchName)) {
 		const branch = getBranch(filesystem)(branchName)
 
-		return branch.commit
+		commitId = branch.commit
 	} else {
-		// initialize reference bundle
-		const referenceBundle = createReferenceBundle(filesystem)
-		const head = referenceBundle.getHead()
-		const commitId = referenceBundle.getCommitId(head)
+		const head = referenceModule.getHead(filesystem)
+		commitId = referenceModule.getReferenceCommitId(filesystem)(head)
 
 		setBranch(filesystem)(branchName)(commitId)
-
-		return commitId
 	}
-}
 
-export const createBundle = (filesystem) => {
-	return {
-		init: () => initBranch(filesystem),
+	// update working directory with files from commit
+	workingDirectoryModule.setWorkingDirectoryFiles(filesystem)({})
 
-		getAll: () => getBranches(filesystem),
-
-		get: getBranch(filesystem),
-
-		set: setBranch(filesystem),
-
-		checkout: checkoutBranch(filesystem),
-
-		buildPath: () => buildBranchPath(filesystem)
-	}
+	// update head
+	referenceModule.setHead(filesystem)(referenceModule.referenceTypes.branch)(branchName)
 }

@@ -1,9 +1,9 @@
 import path from 'path'
+import * as branchModule from './branch'
+import * as commitModule from './commit'
 import { paths } from './config'
-import { buildRepositoryPath } from './repository'
+import * as repositoryModule from './repository'
 import { deserialize, serialize } from './utilities/serialization'
-import { createBundle as createBranchBundle } from './branch'
-import { createBundle as createCommitBundle } from './commit'
 
 export const referenceTypes = {
 	branch: 'branch',
@@ -12,7 +12,7 @@ export const referenceTypes = {
 
 export const buildReferencePath = (filesystem) => {
 	return path.join(
-		buildRepositoryPath(filesystem),
+		repositoryModule.buildRepositoryPath(filesystem),
 		paths.reference
 	)
 }
@@ -102,57 +102,24 @@ export const updateHead = (filesystem) => (id) => {
 	const head = getHead(filesystem)
 
 	if (head.type === referenceTypes.branch) {
-		const branchBundle = createBranchBundle(filesystem)
-
-		branchBundle.set(head.reference)(id)
+		branchModule.setBranch(filesystem)(head.reference)(id)
 	} else if (head.type === referenceTypes.commit) {
 		setHead(filesystem)(head.type)(id)
 	}
 }
 
 export const getReferenceCommit = (filesystem) => (reference) => {
-	const commitBundle = createCommitBundle(filesystem)
 	const commitId = getReferenceCommitId(reference)
 
-	return commitBundle.get(commitId)
+	return commitModule.getCommit(filesystem)(commitId)
 }
 
 export const getReferenceCommitId = (filesystem) => (reference) => {
 	if (reference.type === 'branch') {
-		const branchBundle = createBranchBundle(filesystem)
-
-		return branchBundle.get(reference.reference).commit
+		return branchModule.getBranch(filesystem)(reference.reference).commit
 	} else if (reference.type === 'commit') {
 		return reference.reference
 	}
 
 	throw new Error('Unable to get referenced commit')
-}
-
-export const createBundle = (filesystem) => {
-	return {
-		init: () => initReference(filesystem),
-
-		getTags: () => getTags(filesystem),
-
-		getTag: getTag(filesystem),
-
-		setTag: setTag(filesystem),
-
-		getHead: () => getHead(filesystem),
-
-		setHead: setHead(filesystem),
-
-		updateHead: updateHead(filesystem),
-
-		getCommit: getReferenceCommit(filesystem),
-
-		getCommitId: getReferenceCommitId(filesystem),
-
-		buildPath: () => buildReferencePath(filesystem),
-
-		buildHeadPath: () => buildHeadPath(filesystem),
-
-		buildTagPath: () => buildTagPath(filesystem)
-	}
 }

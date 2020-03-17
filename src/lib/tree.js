@@ -1,5 +1,5 @@
 import path from 'path'
-import { createBundle as createObjectBundle } from './object'
+import * as objectModule from './object'
 import { hashMap } from './utilities/hashing'
 
 export const getTreePath = (id) => {
@@ -17,10 +17,8 @@ export const getBlobPath = (id) => {
 }
 
 export const packTree = (filesystem) => (branch) => {
-	const objectBundle = createObjectBundle(filesystem)
-
 	return hashMap(branch)(getTreePath)(getBlobPath)((id, contents) => {
-		objectBundle.set(id)(contents)
+		objectModule.setObject(filesystem)(id)(contents)
 	})
 }
 
@@ -37,8 +35,6 @@ export const unpackTree = (filesystem) => (id) => {
 		return {}
 	}
 
-	const objectBundle = createObjectBundle(filesystem)
-
 	const unpackTreeRecursive = (branch) => {
 		const tree = {}
 
@@ -47,7 +43,7 @@ export const unpackTree = (filesystem) => (id) => {
 				tree[object] = idFromBlobPath(branch[object])
 			} else if (branch[object].startsWith('tree')) {
 				tree[object] = unpackTreeRecursive(
-					objectBundle.get(
+					objectModule.getObject(filesystem)(
 						idFromTreePath(branch[object])
 					)
 				)
@@ -57,7 +53,7 @@ export const unpackTree = (filesystem) => (id) => {
 		return tree
 	}
 
-	const branch = objectBundle.get(id)
+	const branch = objectModule.getObject(filesystem)(id)
 
 	return unpackTreeRecursive(branch)
 }

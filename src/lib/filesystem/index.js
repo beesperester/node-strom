@@ -1,6 +1,6 @@
 import adapters from './adapters'
 
-export const createBundle = (adapter) => {
+export const createFilesystem = (adapter) => {
 	return {
 		adapter,
 

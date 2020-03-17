@@ -4,9 +4,3 @@ export const createAuthor = (name) => (email) => {
 		email
 	}
 }
-
-export const createBundle = (filesystem) => {
-	return {
-		create: createAuthor
-	}
-}

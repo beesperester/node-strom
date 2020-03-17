@@ -1,32 +1,30 @@
-import { createBundle as createObjectBundle } from './object'
-import { createBundle as createTreeBundle } from './tree'
+import * as objectModule from './object'
+import * as treeModule from './tree'
+import * as stageModule from './stage'
 import { hashString } from './utilities/hashing'
 import { deflate, inflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
 
 export const getCommitFiles = (filesystem) => (commit) => {
 	// get all files from a commit as path: hash key value pairs
-	const treeBundle = createTreeBundle(filesystem)
-
-	const tree = treeBundle.unpack(commit.tree)
+	const tree = treeModule.unpackTree(filesystem)(commit.tree)
 
 	return deflate(tree)
 }
 
-export const commit = (filesystem) => (parents) => (author) => (message) => (stage) => {
+export const commit = (filesystem) => (parents) => (author) => (message) => {
+	const stage = stageModule.getStage(filesystem)
+
 	if (stage.add.length === 0 && stage.remove.length === 0) {
 		throw new Error('Nothing to commit')
 	}
-
-	const objectBundle = createObjectBundle(filesystem)
-	const treeBundle = createTreeBundle(filesystem)
 
 	let tree = {}
 
 	// for each parent, apply changes
 	parents.forEach((id, index) => {
 		const parentCommit = getCommit(filesystem)(id)
-		const parentFiles = deflate(treeBundle.unpack(parentCommit.tree))
+		const parentFiles = deflate(treeModule.unpackTree(filesystem)(parentCommit.tree))
 
 		// remove files from tree if not in parent
 		if (index > 0) {
@@ -48,7 +46,7 @@ export const commit = (filesystem) => (parents) => (author) => (message) => (sta
 		tree[file] = filesystem.hash(file)
 
 		// copy file to objects
-		objectBundle.copy(file)(tree[file])
+		objectModule.copyObject(filesystem)(file)(tree[file])
 	})
 
 	// remove staged files from previous commit files
@@ -62,12 +60,16 @@ export const commit = (filesystem) => (parents) => (author) => (message) => (sta
 		parents,
 		author,
 		message,
-		tree: treeBundle.pack(inflate(tree))
+		tree: treeModule.packTree(filesystem)(inflate(tree))
 	}
 
 	const id = hashString(serialize(commit))
 
+	// store commit
 	setCommit(filesystem)(id)(commit)
+
+	// reset stage after successfull commit
+	stageModule.resetStage(filesystem)
 
 	return id
 }
@@ -77,29 +79,9 @@ export const getCommit = (filesystem) => (id) => {
 		throw new Error('Invalid commit id')
 	}
 
-	const objectBundle = createObjectBundle(filesystem)
-
-	return objectBundle.get(id)
+	return objectModule.getObject(filesystem)(id)
 }
 
 export const setCommit = (filesystem) => (id) => (contents) => {
-	const objectBundle = createObjectBundle(filesystem)
-
-	return objectBundle.set(id)(contents)
-}
-
-export const createBundle = (filesystem) => {
-	return {
-		getFiles: getCommitFiles(filesystem),
-
-		get: getCommit(filesystem),
-
-		set: setCommit(filesystem),
-
-		commit: commit(filesystem)
-	}
-}
-
-export default {
-	getCommit
+	return objectModule.setObject(filesystem)(id)(contents)
 }
