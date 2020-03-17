@@ -13,8 +13,8 @@ import { getFilesystem } from '../setup'
 describe('unit/repository', function () {
 	const { storage, filesystem } = getFilesystem()
 
-	describe('repository', function () {
-		it('initRepository', function () {
+	describe('initRepository', function () {
+		it('succeeds', function () {
 			/**
 			 * creates neccessary directories and files if missing,
 			 * creates master branch if missing
@@ -58,8 +58,8 @@ describe('unit/repository', function () {
 		})
 	})
 
-	describe('repository', function () {
-		it('commitRepository', function () {
+	describe('commitRepository', function () {
+		it('succeeds', function () {
 			strom.lib.stage.stageFiles(filesystem)([
 				'setup-cinema4d/model_main.c4d'
 			])
