@@ -50,6 +50,10 @@ export const removeWorkingDirectoryFiles = (filesystem) => (files) => {
 	removeRecursive(inflate(files))('')
 }
 
+export const removeWorkingDirectoryFile = (filesystem) => (file) => {
+	filesystem.remove(file)
+}
+
 export const pruneWorkingDirectory = (filesystem) => {
 	const files = getWorkingDirectoryFiles(filesystem)
 

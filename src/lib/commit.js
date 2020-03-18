@@ -30,8 +30,8 @@ export const commit = (filesystem) => (parents) => (author) => (message) => {
 		// remove files from tree if not in parent
 		if (index > 0) {
 			Object.keys(tree).forEach((file) => {
-				if (!parentFiles.includes(file)) {
-					delete tree[file]
+				if (!Object.keys(parentFiles).includes(file)) {
+					// delete tree[file]
 				}
 			})
 		}

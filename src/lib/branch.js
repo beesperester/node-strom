@@ -5,6 +5,9 @@ import { paths } from './config'
 import * as referenceModule from './reference'
 import { deserialize, serialize } from './utilities/serialization'
 import * as workingDirectoryModule from './workingDirectory'
+import * as objectModule from './object'
+import * as stageModule from './stage'
+import * as repositoryModule from './repository'
 
 export const initBranch = (filesystem) => {
 	if (!filesystem.isDir(paths.branch)) {
@@ -86,7 +89,7 @@ export const checkoutBranch = (filesystem) => (branchName) => {
 	referenceModule.setHead(filesystem)(referenceModule.referenceTypes.branch)(branchName)
 }
 
-export const merge = (filesystem) => (branchName) => {
+export const merge = (filesystem) => (branchName) => (message) => {
 	// get current branch
 	const head = referenceModule.getHead(filesystem)
 
@@ -118,6 +121,79 @@ export const merge = (filesystem) => (branchName) => {
 				// simply fast forward head to nextBranch commit
 
 				setBranch(filesystem)(head.reference)(nextCommitId)
+			} else {
+				// case 2: currentBranch and nextBranch have common ancestors
+
+				for (let commitId of currentHistory) {
+					if (nextHistory.includes(commitId)) {
+						// found the common ancestor
+						const compareCurrentCommit = commitModule.compare(filesystem)(commitId)(currentCommitId)
+						const compareNextCommit = commitModule.compare(filesystem)(commitId)(nextCommitId)
+
+						// check for merge conflicts in added files
+						compareCurrentCommit.added.forEach((file) => {
+							if (compareNextCommit.added.includes(file)) {
+								throw new Error(`Merge conflict for added file ${file}`)
+							}
+						})
+
+						// check for merge conflicts in modified files
+						compareCurrentCommit.modified.forEach((file) => {
+							if (compareNextCommit.modified.includes(file)) {
+								throw new Error(`Merge conflict for modified file ${file}`)
+							}
+						})
+
+						// apply changes
+						// update working directory with files from commit
+						const nextCommitFiles = commitModule.getCommitFiles(filesystem)(nextCommit)
+
+						const filesToStage = []
+
+						// restore added files
+						compareNextCommit.added.forEach((file) => {
+							if (Object.keys(nextCommitFiles).includes(file)) {
+								objectModule.restoreObject(filesystem)(nextCommitFiles[file])(file)
+
+								filesToStage.push(file)
+							}
+						})
+
+						// restore modified files
+						compareNextCommit.modified.forEach((file) => {
+							if (Object.keys(nextCommitFiles).includes(file)) {
+								objectModule.restoreObject(filesystem)(nextCommitFiles[file])(file)
+
+								filesToStage.push(file)
+							}
+						})
+
+						// apply deletions
+						compareNextCommit.removed.forEach((file) => {
+							workingDirectoryModule.removeWorkingDirectoryFile(filesystem)(file)
+
+							filesToStage.push(file)
+						})
+
+						// stage changes
+						stageModule.stageFiles(filesystem)(filesToStage)
+
+						const parents = [
+							currentCommitId,
+							nextCommitId
+						]
+						const author = {
+							name: 'Bernhard Esperester',
+							email: 'bernhard@esperester.de'
+						}
+
+						const mergedCommitId = commitModule.commit(filesystem)(parents)(author)(message)
+
+						setBranch(filesystem)(head.reference)(mergedCommitId)
+
+						break
+					}
+				}
 			}
 		}
 	} else {
