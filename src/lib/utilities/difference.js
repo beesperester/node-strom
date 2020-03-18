@@ -3,11 +3,11 @@ export const getFilesDifference = (filesA) => (filesB) => {
 	const modified = []
 	const removed = []
 
-	// compare files from working directory with files from previous commit
+	// compare files from filesA with filesB
 	Object.keys(filesA).forEach((file) => {
 		if (!Object.keys(filesB).includes(file)) {
-			// add added file
-			added.push(file)
+			// add removed file
+			removed.push(file)
 		} else if (filesA[file] !== filesB[file]) {
 			// add modified file
 			modified.push(file)
@@ -17,8 +17,8 @@ export const getFilesDifference = (filesA) => (filesB) => {
 	// compare files from previous commit with files from working directory
 	Object.keys(filesB).forEach((file) => {
 		if (!Object.keys(filesA).includes(file)) {
-			// add removed file
-			removed.push(file)
+			// add added file
+			added.push(file)
 		}
 	})
 

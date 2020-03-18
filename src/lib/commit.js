@@ -1,6 +1,7 @@
 import * as objectModule from './object'
-import * as treeModule from './tree'
 import * as stageModule from './stage'
+import * as treeModule from './tree'
+import { getFilesDifference } from './utilities/difference'
 import { hashString } from './utilities/hashing'
 import { deflate, inflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
@@ -84,4 +85,14 @@ export const getCommit = (filesystem) => (id) => {
 
 export const setCommit = (filesystem) => (id) => (contents) => {
 	return objectModule.setObject(filesystem)(id)(contents)
+}
+
+export const compare = (filesystem) => (commitIdA) => (commitIdB) => {
+	const commitA = getCommit(filesystem)(commitIdA)
+	const commitB = getCommit(filesystem)(commitIdB)
+
+	const filesA = getCommitFiles(filesystem)(commitA)
+	const filesB = getCommitFiles(filesystem)(commitB)
+
+	return getFilesDifference(filesA)(filesB)
 }

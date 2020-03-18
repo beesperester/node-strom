@@ -104,5 +104,5 @@ export const getState = (filesystem) => {
 		commitFiles = commitModule.getCommitFiles(filesystem)(commit)
 	}
 
-	return getFilesDifference(workingDirectoryFiles)(commitFiles)
+	return getFilesDifference(commitFiles)(workingDirectoryFiles)
 }

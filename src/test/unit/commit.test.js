@@ -57,4 +57,34 @@ describe('unit/commit', function () {
 			expect(received).to.deep.equal(expected)
 		})
 	})
+
+	describe('compare', function () {
+		it('succeeds', function () {
+			// compare two commits
+			const firstFile = Object.keys(setup.workingDirectory)[0]
+			const secondFile = Object.keys(setup.workingDirectory)[1]
+
+			// commit first file
+			strom.lib.stage.stageFile(filesystem)(firstFile)
+
+			const firstCommitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			// commit second file
+			strom.lib.stage.stageFile(filesystem)(secondFile)
+
+			const secondCommitId = strom.lib.repository.commitRepository(filesystem)('second commit')
+
+			// compare both commits
+			const received = strom.lib.commit.compare(filesystem)(firstCommitId)(secondCommitId)
+			const expected = {
+				added: [
+					secondFile
+				],
+				modified: [],
+				removed: []
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+	})
 })
