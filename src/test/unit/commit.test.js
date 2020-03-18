@@ -1,7 +1,7 @@
 // Test related imports.
 import { expect } from 'chai'
 import 'chai/register-expect'
-import { describe, it, beforeEach } from 'mocha'
+import { beforeEach, describe, it } from 'mocha'
 import strom from '../../index'
 import { getBlobPath, getTreePath } from '../../lib/tree'
 import { noop } from '../../lib/utilities'
@@ -59,7 +59,7 @@ describe('unit/commit', function () {
 	})
 
 	describe('compare', function () {
-		it('succeeds', function () {
+		it('adds file', function () {
 			// compare two commits
 			const firstFile = Object.keys(setup.workingDirectory)[0]
 			const secondFile = Object.keys(setup.workingDirectory)[1]
@@ -82,6 +82,35 @@ describe('unit/commit', function () {
 				],
 				modified: [],
 				removed: []
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+
+		it('removes file', function () {
+			// compare two commits
+			const removedFile = Object.keys(setup.workingDirectory)[0]
+
+			// commit first file
+			strom.lib.stage.stageFiles(filesystem)(Object.keys(setup.workingDirectory))
+
+			const firstCommitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			// commit second file
+			filesystem.remove(removedFile)
+
+			strom.lib.stage.stageFile(filesystem)(removedFile)
+
+			const secondCommitId = strom.lib.repository.commitRepository(filesystem)('second commit')
+
+			// compare both commits
+			const received = strom.lib.commit.compare(filesystem)(firstCommitId)(secondCommitId)
+			const expected = {
+				added: [],
+				modified: [],
+				removed: [
+					removedFile
+				]
 			}
 
 			expect(received).to.deep.equal(expected)
