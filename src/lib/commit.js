@@ -96,3 +96,22 @@ export const compare = (filesystem) => (commitIdA) => (commitIdB) => {
 
 	return getFilesDifference(filesA)(filesB)
 }
+
+export const getCommitHistory = (filesystem) => (commit) => {
+	let history = []
+
+	commit.parents.forEach((parentCommitId) => {
+		history.push(parentCommitId)
+
+		const parentCommit = getCommit(filesystem)(parentCommitId)
+		const parentHistory = getCommitHistory(filesystem)(parentCommit)
+
+		parentHistory.forEach((commitId) => {
+			if (!history.includes(commitId)) {
+				history.push(commitId)
+			}
+		})
+	})
+
+	return history
+}

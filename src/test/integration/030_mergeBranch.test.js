@@ -22,7 +22,7 @@ describe('integration/mergeBranch', function () {
 	})
 
 	describe('mergeBranch', function () {
-		it('merges branch "development"', function () {
+		it('fast forward "master" branch to "development"', function () {
 			// commits first file
 			const firstFile = Object.keys(setup.workingDirectory)[0]
 			const secondFile = Object.keys(setup.workingDirectory)[1]
@@ -55,6 +55,11 @@ describe('integration/mergeBranch', function () {
 
 			// merge with branch "development"
 			strom.lib.branch.merge(filesystem)('development')
+
+			const received = strom.lib.repository.getRepositoryCommitId(filesystem)
+			const expected = thirdCommitId
+
+			expect(received).to.equal(expected)
 		})
 	})
 })

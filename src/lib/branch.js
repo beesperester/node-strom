@@ -1,4 +1,5 @@
 import path from 'path'
+import * as branchModule from './branch'
 import * as commitModule from './commit'
 import { paths } from './config'
 import * as referenceModule from './reference'
@@ -83,4 +84,43 @@ export const checkoutBranch = (filesystem) => (branchName) => {
 
 	// update head
 	referenceModule.setHead(filesystem)(referenceModule.referenceTypes.branch)(branchName)
+}
+
+export const merge = (filesystem) => (branchName) => {
+	// get current branch
+	const head = referenceModule.getHead(filesystem)
+
+	if (head.type == referenceModule.referenceTypes.branch) {
+		// current head points to a branch
+
+		if (head.reference === branchName) {
+			// head points to branch that should be merged
+			throw new Error('Unable to merge branch onto itself')
+		} else {
+			// merge branch
+
+			// find last common commit
+			const currentBranch = branchModule.getBranch(filesystem)(head.reference)
+			const nextBranch = branchModule.getBranch(filesystem)(branchName)
+
+			const currentCommitId = currentBranch.commit
+			const nextCommitId = nextBranch.commit
+
+			const currentCommit = commitModule.getCommit(filesystem)(currentCommitId)
+			const nextCommit = commitModule.getCommit(filesystem)(nextCommitId)
+
+			const currentHistory = commitModule.getCommitHistory(filesystem)(currentCommit)
+			const nextHistory = commitModule.getCommitHistory(filesystem)(nextCommit)
+
+			if (nextHistory.includes(currentCommitId)) {
+				// case 1: nextBranch is a direct descendant 
+				// while currentBranch has not been modified
+				// simply fast forward head to nextBranch commit
+
+				setBranch(filesystem)(head.reference)(nextCommitId)
+			}
+		}
+	} else {
+		throw new Error('Head does not reference a branch')
+	}
 }
