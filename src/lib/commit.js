@@ -6,6 +6,7 @@ import { hashString } from './utilities/hashing'
 import { deflate, inflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
 import moment from 'moment'
+import { sortMoment } from './utilities/sorting'
 
 export const getCommitFiles = (filesystem) => (commit) => {
 	// get all files from a commit as path: hash key value pairs
@@ -62,7 +63,7 @@ export const commit = (filesystem) => (parents) => (author) => (message) => {
 		parents,
 		author,
 		message,
-		created: moment().toISOString(),
+		created: moment().toISOString(true),
 		tree: treeModule.packTree(filesystem)(inflate(tree))
 	}
 
@@ -115,5 +116,5 @@ export const getCommitHistory = (filesystem) => (commit) => {
 		})
 	})
 
-	return history
+	return history.sort(sortMoment)
 }
