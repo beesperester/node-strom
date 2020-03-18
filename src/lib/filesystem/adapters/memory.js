@@ -9,7 +9,7 @@ export const createAdapter = (storage) => {
 		state: () => copyDeep(clone),
 
 		getRootDirectory: () => {
-			return ''
+			return '/Users/bernhardesperester'
 		},
 
 		walk: (file) => {

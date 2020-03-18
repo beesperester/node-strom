@@ -1,28 +1,18 @@
 import path from 'path'
 import { paths } from './config'
-import * as repositoryModule from './repository'
 import { hashPath } from './utilities/hashing'
 import { deserialize, serialize } from './utilities/serialization'
 
-export const buildObjectPath = (filesystem) => {
-	return path.join(
-		repositoryModule.buildRepositoryPath(filesystem),
-		paths.object
-	)
-}
-
 export const initObject = (filesystem) => {
-	const objectsDirectory = buildObjectPath(filesystem)
-
-	if (!filesystem.isDir(objectsDirectory)) {
-		filesystem.mkdir(objectsDirectory)
+	if (!filesystem.isDir(paths.object)) {
+		filesystem.mkdir(paths.object)
 	}
 }
 
 export const getObject = (filesystem) => (id) => {
 	return deserialize(filesystem.read(
 		path.join(
-			buildObjectPath(filesystem),
+			paths.object,
 			hashPath(id)
 		)
 	))
@@ -31,7 +21,7 @@ export const getObject = (filesystem) => (id) => {
 export const setObject = (filesystem) => (id) => (content) => {
 	filesystem.write(
 		path.join(
-			buildObjectPath(filesystem),
+			paths.object,
 			hashPath(id)
 		)
 	)(serialize(content))
@@ -40,7 +30,7 @@ export const setObject = (filesystem) => (id) => (content) => {
 export const copyObject = (filesystem) => (file) => (id) => {
 	filesystem.copy(file)(
 		path.join(
-			buildObjectPath(filesystem),
+			paths.object,
 			hashPath(id)
 		)
 	)

@@ -1,22 +1,13 @@
 import path from 'path'
+import * as commitModule from './commit'
 import { paths } from './config'
 import * as referenceModule from './reference'
-import * as repositoryModule from './repository'
 import { deserialize, serialize } from './utilities/serialization'
 import * as workingDirectoryModule from './workingDirectory'
 
-export const buildBranchPath = (filesystem) => {
-	return path.join(
-		repositoryModule.buildRepositoryPath(filesystem),
-		paths.branch
-	)
-}
-
 export const initBranch = (filesystem) => {
-	const branchesDirectory = buildBranchPath(filesystem)
-
-	if (!filesystem.isDir(branchesDirectory)) {
-		filesystem.mkdir(branchesDirectory)
+	if (!filesystem.isDir(paths.branch)) {
+		filesystem.mkdir(paths.branch)
 	}
 
 	try {
@@ -27,14 +18,14 @@ export const initBranch = (filesystem) => {
 }
 
 export const getBranches = (filesystem) => {
-	return filesystem.lsdir(buildBranchPath(filesystem))
+	return filesystem.lsdir(paths.branch)
 }
 
 export const getBranch = (filesystem) => (name) => {
 	return deserialize(
 		filesystem.read(
 			path.join(
-				buildBranchPath(filesystem),
+				paths.branch,
 				name
 			)
 		)
@@ -48,7 +39,7 @@ export const setBranch = (filesystem) => (name) => (id) => {
 
 	filesystem.write(
 		path.join(
-			buildBranchPath(filesystem),
+			paths.branch,
 			name
 		)
 	)(serialize(branch))
@@ -79,8 +70,14 @@ export const checkoutBranch = (filesystem) => (branchName) => {
 		setBranch(filesystem)(branchName)(commitId)
 	}
 
-	// update working directory with files from commit
-	workingDirectoryModule.setWorkingDirectoryFiles(filesystem)({})
+	if (commitId) {
+		// commit files
+		const commit = commitModule.getCommit(filesystem)(commitId)
+		const commitFiles = commitModule.getCommitFiles(filesystem)(commit)
+
+		// update working directory with files from commit
+		workingDirectoryModule.setWorkingDirectoryFiles(filesystem)(commitFiles)
+	}
 
 	// update head
 	referenceModule.setHead(filesystem)(referenceModule.referenceTypes.branch)(branchName)

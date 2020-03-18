@@ -7,5 +7,11 @@ export default {
 		}
 
 		return cache[signature]
+	},
+
+	invalidate: (signature) => {
+		if (Object.keys(cache).includes(signature)) {
+			delete cache[signature]
+		}
 	}
 }

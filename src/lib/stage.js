@@ -1,7 +1,5 @@
-import path from 'path'
 import { paths } from './config'
-import * as repositoryModule from './repository'
-import { serialize, deserialize } from './utilities/serialization'
+import { deserialize, serialize } from './utilities/serialization'
 import * as workingDirectoryModule from './workingDirectory'
 
 export const addFile = (filesystem) => (file) => {
@@ -74,26 +72,19 @@ export const removeFile = (filesystem) => (file) => {
 export const getStage = (filesystem) => {
 	return deserialize(
 		filesystem.read(
-			buildStagePath(filesystem)
+			paths.stage
 		)
 	)
 }
 
 export const setStage = (filesystem) => (state) => {
 	filesystem.write(
-		buildStagePath(filesystem)
+		paths.stage
 	)(serialize(state))
 }
 
-export const buildStagePath = (filesystem) => {
-	return path.join(
-		repositoryModule.buildRepositoryPath(filesystem),
-		paths.stage
-	)
-}
-
 export const initStage = (filesystem) => {
-	if (!filesystem.isFile(buildStagePath(filesystem))) {
+	if (!filesystem.isFile(paths.stage)) {
 		resetStage(filesystem)
 	}
 }

@@ -1,14 +1,10 @@
 import path from 'path'
-import * as repositoryModule from './repository'
-import { filterMinimatchString } from './utilities/filtering'
-import cache from './utilities/cache'
-import * as referenceModule from './reference'
 import * as commitModule from './commit'
+import { paths } from './config'
+import * as repositoryModule from './repository'
+import cache from './utilities/cache'
 import { getFilesDifference } from './utilities/difference'
-
-export const buildWorkingDirectoryPath = (filesystem) => {
-	return filesystem.getRootDirectory()
-}
+import { filterMinimatchString } from './utilities/filtering'
 
 export const getWorkingDirectoryFiles = (filesystem) => {
 	return cache.get('getWorkingDirectoryFiles')(() => {
@@ -16,7 +12,7 @@ export const getWorkingDirectoryFiles = (filesystem) => {
 			.filter(
 				filterMinimatchString(
 					[
-						`!${repositoryModule.buildRepositoryPath(filesystem)}/**`
+						`!${paths.repository}/**`
 					]
 				)
 			)
@@ -31,6 +27,9 @@ export const getWorkingDirectoryFiles = (filesystem) => {
 }
 
 export const setWorkingDirectoryFiles = (filesystem) => (files) => {
+	// invalidate cache
+	cache.invalidate('getWorkingDirectoryFiles')
+
 
 }
 

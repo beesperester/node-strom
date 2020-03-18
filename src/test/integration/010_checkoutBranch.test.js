@@ -14,7 +14,7 @@ const createFilesystem = () => {
 	return filesystem
 }
 
-describe('integration/checkoutBranch', function () {
+describe.skip('integration/checkoutBranch', function () {
 	describe('checkoutBranch', function () {
 		beforeEach(function () {
 			filesystem = createFilesystem()
@@ -48,7 +48,7 @@ describe('integration/checkoutBranch', function () {
 			// commit file
 			const file = 'setup-cinema4d/model_main.c4d'
 
-			strom.lib.stage.addFile(filesystem)(file)
+			strom.lib.stage.stageFile(filesystem)(file)
 
 			strom.lib.repository.commitRepository(filesystem)('initial commit')
 
@@ -71,6 +71,32 @@ describe('integration/checkoutBranch', function () {
 			const checkout = () => strom.lib.branch.checkoutBranch(filesystem)('master')
 
 			expect(checkout).to.throw()
+		})
+
+		it('succeeds to checkout', function () {
+			const files = Object.keys(setup.workingDirectory)
+			const firstFile = files.shift()
+
+			strom.lib.stage.stageFile(filesystem)(firstFile)
+
+			strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			strom.lib.branch.checkoutBranch(filesystem)('development')
+
+			strom.lib.stage.stageFiles(filesystem)(files)
+
+			strom.lib.repository.commitRepository(filesystem)('adds other files')
+
+			strom.lib.branch.checkoutBranch(filesystem)('master')
+
+			const state = filesystem.adapter.state()
+
+			const received = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
+			const expected = {
+				[firstFile]: hashString(setup.workingDirectory[firstFile])
+			}
+
+			expect(receivedFiles).to.deep.equal(expectedFiles)
 		})
 	})
 })

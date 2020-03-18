@@ -2,7 +2,6 @@ import path from 'path'
 import * as branchModule from './branch'
 import * as commitModule from './commit'
 import { paths } from './config'
-import * as repositoryModule from './repository'
 import { deserialize, serialize } from './utilities/serialization'
 
 export const referenceTypes = {
@@ -10,31 +9,10 @@ export const referenceTypes = {
 	commit: 'commit'
 }
 
-export const buildReferencePath = (filesystem) => {
-	return path.join(
-		repositoryModule.buildRepositoryPath(filesystem),
-		paths.reference
-	)
-}
-
-export const buildTagPath = (filesystem) => {
-	return path.join(
-		buildReferencePath(filesystem),
-		paths.tag
-	)
-}
-
-export const buildHeadPath = (filesystem) => {
-	return path.join(
-		buildReferencePath(filesystem),
-		paths.head
-	)
-}
-
 export const initReference = (filesystem) => {
 	const referenceDirectories = [
-		buildReferencePath(filesystem),
-		buildTagPath(filesystem)
+		paths.reference,
+		paths.tag
 	]
 
 	referenceDirectories.forEach((directory) => {
@@ -51,15 +29,13 @@ export const initReference = (filesystem) => {
 }
 
 export const getTags = (filesystem) => {
-	return filesystem.lsdir(
-		buildTagPath(filesystem)
-	)
+	return filesystem.lsdir(paths.tag)
 }
 
 export const getTag = (filesystem) => (name) => {
 	return deserialize(
 		filesystem.read(
-			buildTagPath(filesystem),
+			paths.tag,
 			name
 		)
 	)
@@ -73,7 +49,7 @@ export const setTag = (filesystem) => (name) => (id) => {
 
 	filesystem.write(
 		path.join(
-			buildTagPath(filesystem),
+			paths.tag,
 			name
 		)
 	)(serialize(contents))
@@ -81,9 +57,7 @@ export const setTag = (filesystem) => (name) => (id) => {
 
 export const getHead = (filesystem) => {
 	return deserialize(
-		filesystem.read(
-			buildHeadPath(filesystem)
-		)
+		filesystem.read(paths.head)
 	)
 }
 
@@ -93,9 +67,7 @@ export const setHead = (filesystem) => (referenceType) => (referencePath) => {
 		reference: referencePath
 	}
 
-	filesystem.write(
-		buildHeadPath(filesystem)
-	)(serialize(contents))
+	filesystem.write(paths.head)(serialize(contents))
 }
 
 export const updateHead = (filesystem) => (id) => {

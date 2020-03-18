@@ -57,11 +57,3 @@ export const unpackTree = (filesystem) => (id) => {
 
 	return unpackTreeRecursive(branch)
 }
-
-export const createBundle = (filesystem) => {
-	return {
-		unpack: unpackTree(filesystem),
-
-		pack: packTree(filesystem)
-	}
-}
