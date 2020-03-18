@@ -81,7 +81,7 @@ describe('unit/repository', function () {
 			const commitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
 
 			const tree = inflate(
-				strom.lib.workingDirectory.getWorkingDirectoryFile(filesystem)('setup-cinema4d/model_main.c4d')
+				strom.lib.workingDirectory.getWorkingDirectoryFileHashed(filesystem)('setup-cinema4d/model_main.c4d')
 			)
 
 			const received = strom.lib.commit.getCommit(filesystem)(commitId)

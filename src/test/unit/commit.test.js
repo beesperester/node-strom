@@ -42,7 +42,7 @@ describe('unit/commit', function () {
 			const commitId = strom.lib.commit.commit(filesystem)(parents)(author)(message)
 
 			const tree = inflate(
-				strom.lib.workingDirectory.getWorkingDirectoryFile(filesystem)('setup-cinema4d/model_main.c4d')
+				strom.lib.workingDirectory.getWorkingDirectoryFileHashed(filesystem)('setup-cinema4d/model_main.c4d')
 			)
 
 			const received = strom.lib.commit.getCommit(filesystem)(commitId)

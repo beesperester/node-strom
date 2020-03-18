@@ -3,29 +3,30 @@ import * as commitModule from './commit'
 import { paths } from './config'
 import * as repositoryModule from './repository'
 import * as objectModule from './object'
-import cache from './utilities/cache'
 import { getFilesDifference } from './utilities/difference'
 import { filterMinimatchString } from './utilities/filtering'
 import { inflate } from './utilities/map'
 
 export const getWorkingDirectoryFiles = (filesystem) => {
-	return cache.get('getWorkingDirectoryFiles')(() => {
-		const workingDirFiles = filesystem.walk('')
-			.filter(
-				filterMinimatchString(
-					[
-						`!${paths.repository}/**`
-					]
-				)
+	return filesystem.walk('')
+		.filter(
+			filterMinimatchString(
+				[
+					`!${paths.repository}/**`
+				]
 			)
-		const workingDirFilesHashed = {}
+		)
+}
 
-		workingDirFiles.forEach((file) => {
-			workingDirFilesHashed[file] = filesystem.hash(file)
-		})
+export const getWorkingDirectoryFilesHashed = (filesystem) => {
+	const workingDirFiles = getWorkingDirectoryFiles(filesystem)
+	const workingDirFilesHashed = {}
 
-		return workingDirFilesHashed
+	workingDirFiles.forEach((file) => {
+		workingDirFilesHashed[file] = filesystem.hash(file)
 	})
+
+	return workingDirFilesHashed
 }
 
 export const removeWorkingDirectoryFiles = (filesystem) => (files) => {
@@ -50,12 +51,9 @@ export const removeWorkingDirectoryFiles = (filesystem) => (files) => {
 }
 
 export const setWorkingDirectoryFiles = (filesystem) => (files) => {
-	const currentFiles = getWorkingDirectoryFiles(filesystem)
+	const currentFiles = getWorkingDirectoryFilesHashed(filesystem)
 
 	removeWorkingDirectoryFiles(filesystem)(currentFiles)
-
-	// invalidate cache
-	cache.invalidate('getWorkingDirectoryFiles')
 
 	// copy commit files from objects to working directory
 	Object.keys(files).forEach((file) => {
@@ -64,22 +62,25 @@ export const setWorkingDirectoryFiles = (filesystem) => (files) => {
 }
 
 export const getWorkingDirectoryFile = (filesystem) => (file) => {
-	return cache.get(
-		path.join(
-			'getWorkingDirectoryFile',
-			file
-		)
-	)(() => {
-		const files = getWorkingDirectoryFiles(filesystem)
+	const files = getWorkingDirectoryFiles(filesystem)
 
-		if (Object.keys(files).includes(file)) {
-			return {
-				[file]: files[file]
-			}
+	if (files.includes(file)) {
+		return file
+	}
+
+	throw new Error(`Unable to retrieve file ${file}`)
+}
+
+export const getWorkingDirectoryFileHashed = (filesystem) => (file) => {
+	const files = getWorkingDirectoryFilesHashed(filesystem)
+
+	if (Object.keys(files).includes(file)) {
+		return {
+			[file]: files[file]
 		}
+	}
 
-		throw new Error(`Unable to retrieve file ${file}`)
-	})
+	throw new Error(`Unable to retrieve file ${file}`)
 }
 
 export const getState = (filesystem) => {
@@ -93,7 +94,7 @@ export const getState = (filesystem) => {
 	*/
 
 	// get head reference
-	const workingDirectoryFiles = getWorkingDirectoryFiles(filesystem)
+	const workingDirectoryFiles = getWorkingDirectoryFilesHashed(filesystem)
 	let commitFiles = {}
 
 	const commitId = repositoryModule.getRepositoryCommitId(filesystem)

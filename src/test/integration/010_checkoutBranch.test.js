@@ -34,7 +34,7 @@ describe('integration/checkoutBranch', function () {
 			expect(receivedHead).to.deep.equal(expectedHead)
 
 			// test working directory
-			const receivedFiles = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
+			const receivedFiles = strom.lib.workingDirectory.getWorkingDirectoryFilesHashed(filesystem)
 			const expectedFiles = Object.keys(setup.workingDirectory).reduce((previousValue, currentValue) => {
 				previousValue[currentValue] = hashString(setup.workingDirectory[currentValue])
 
@@ -94,7 +94,7 @@ describe('integration/checkoutBranch', function () {
 			strom.lib.branch.checkoutBranch(filesystem)('master')
 
 			// working directory should now only contain first file
-			const receivedMasterFiles = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
+			const receivedMasterFiles = strom.lib.workingDirectory.getWorkingDirectoryFilesHashed(filesystem)
 			const expectedMasterFiles = {
 				[firstFile]: hashString(setup.workingDirectory[firstFile])
 			}
@@ -107,7 +107,7 @@ describe('integration/checkoutBranch', function () {
 			// working directory should now contain files from first 
 			// commit in "master" plus files from next commit in
 			// branch "development"
-			const receivedDevelopmentFiles = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
+			const receivedDevelopmentFiles = strom.lib.workingDirectory.getWorkingDirectoryFilesHashed(filesystem)
 			const expectedDevelopmentFiles = [
 				...files,
 				firstFile
