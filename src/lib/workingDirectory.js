@@ -50,10 +50,20 @@ export const removeWorkingDirectoryFiles = (filesystem) => (files) => {
 	removeRecursive(inflate(files))('')
 }
 
-export const setWorkingDirectoryFiles = (filesystem) => (files) => {
-	const currentFiles = getWorkingDirectoryFilesHashed(filesystem)
+export const pruneWorkingDirectory = (filesystem) => {
+	const files = getWorkingDirectoryFiles(filesystem)
 
-	removeWorkingDirectoryFiles(filesystem)(currentFiles)
+	const fakeLeaves = {}
+
+	files.forEach((file) => {
+		fakeLeaves[file] = ''
+	})
+
+	removeWorkingDirectoryFiles(filesystem)(fakeLeaves)
+}
+
+export const setWorkingDirectoryFiles = (filesystem) => (files) => {
+	pruneWorkingDirectory(filesystem)
 
 	// copy commit files from objects to working directory
 	Object.keys(files).forEach((file) => {
