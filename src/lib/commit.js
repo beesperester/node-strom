@@ -63,7 +63,7 @@ export const commit = (filesystem) => (parents) => (author) => (message) => {
 		parents,
 		author,
 		message,
-		created: moment().toISOString(true),
+		created: moment(new Date()).toISOString(true),
 		tree: treeModule.packTree(filesystem)(inflate(tree))
 	}
 
@@ -101,20 +101,129 @@ export const compare = (filesystem) => (commitIdA) => (commitIdB) => {
 }
 
 export const getCommitHistory = (filesystem) => (commit) => {
-	let history = []
+	const getCommitHistoryRecursirve = (currentCommit) => {
+		let history = []
 
-	commit.parents.forEach((parentCommitId) => {
-		history.push(parentCommitId)
+		currentCommit.parents.forEach((parentCommitId) => {
+			const parentCommit = getCommit(filesystem)(parentCommitId)
 
-		const parentCommit = getCommit(filesystem)(parentCommitId)
-		const parentHistory = getCommitHistory(filesystem)(parentCommit)
+			history.push({
+				...parentCommit,
+				id: parentCommitId
+			})
 
-		parentHistory.forEach((commitId) => {
-			if (!history.includes(commitId)) {
-				history.push(commitId)
-			}
+			// get parent commit history
+			const parentHistory = getCommitHistoryRecursirve(parentCommit)
+
+			parentHistory.forEach((parentHistoryCommit) => {
+				if (!history.map((x) => x.id).includes(parentHistoryCommit.id)) {
+					history.push(parentHistoryCommit)
+				}
+			})
 		})
-	})
 
-	return history.sort(sortMoment)
+		return history
+	}
+
+	const commitHistory = getCommitHistoryRecursirve(commit)
+
+	return commitHistory.sort((a, b) => sortMoment(a.created, b.created)).map((x) => x.id)
+}
+
+export const mergeCommit = (filesystem) => (commitIdA) => (commitIdB) => {
+	// get commits
+	const commitA = getCommit(filesystem)(commitIdA)
+	const commitB = getCommit(filesystem)(commitIdB)
+
+	// get commit histories
+	const commitHistoryA = getCommitHistory(filesystem)(commitA)
+	const commitHistoryB = getCommitHistory(filesystem)(commitB)
+
+	if (commitHistoryB.includes(commitIdA)) {
+		// case 1: commitB is a direct descendant of commitA
+		// while commitA has not been modified
+		// simply fast forward head to nextBranch commit
+
+		return commitIdB
+	} else {
+		// case 2: currentBranch and nextBranch have common ancestors
+
+		for (let commitIdHistoryA of commitHistoryA) {
+			if (commitHistoryB.includes(commitIdHistoryA)) {
+				// found the common ancestor
+
+				// compare commitIdA with common ancestor commitIdHistoryA
+				const compareCommitA = compare(filesystem)(commitIdHistoryA)(commitIdA)
+
+				// compare commitIdB with common ancestor commitIdHistoryA
+				const compareCommitB = compare(filesystem)(commitIdHistoryA)(commitIdB)
+
+				// check for merge conflicts in added files
+				compareCommitA.added.forEach((file) => {
+					if (compareCommitB.added.includes(file)) {
+						throw new Error(`Merge conflict for added file ${file}`)
+					}
+				})
+
+				// check for merge conflicts in modified files
+				compareCommitA.modified.forEach((file) => {
+					if (compareCommitB.modified.includes(file)) {
+						throw new Error(`Merge conflict for modified file ${file}`)
+					}
+				})
+
+				// get files of commits
+				const commitFilesA = getCommitFiles(filesystem)(commitA)
+				const commitFilesB = getCommitFiles(filesystem)(commitB)
+
+				const mergedCommitFiles = {
+					...commitFilesA
+				}
+
+				// restore added files
+				compareCommitB.added.forEach((file) => {
+					mergedCommitFiles[file] = commitFilesB[file]
+				})
+
+				// restore modified files
+				compareCommitB.modified.forEach((file) => {
+					mergedCommitFiles[file] = commitFilesB[file]
+				})
+
+				// apply deletions
+				compareCommitB.removed.forEach((file) => {
+					delete mergedCommitFiles[file]
+				})
+
+				const parents = [
+					commitIdA,
+					commitIdB
+				]
+
+				const author = {
+					name: 'Bernhard Esperester',
+					email: 'bernhard@esperester.de'
+				}
+
+				const message = `merges ${commitIdA.substring(0, 6)} with ${commitIdB.substring(0, 6)}`
+
+				const commit = {
+					parents,
+					author,
+					message,
+					created: moment(new Date()).toISOString(true),
+					tree: treeModule.packTree(filesystem)(inflate(mergedCommitFiles))
+				}
+
+				const mergedCommitId = hashString(serialize(commit))
+
+				// store commit
+				setCommit(filesystem)(mergedCommitId)(commit)
+
+				return mergedCommitId
+			}
+		}
+
+		throw new Error('foo')
+	}
 }

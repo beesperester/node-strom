@@ -55,7 +55,7 @@ describe('integration/mergeBranch', function () {
 			strom.lib.branch.checkoutBranch(filesystem)('master')
 
 			// merge with branch "development"
-			strom.lib.branch.merge(filesystem)('development')('fast forward')
+			strom.lib.branch.merge(filesystem)('development')
 
 			const received = strom.lib.repository.getRepositoryCommitId(filesystem)
 			const expected = thirdCommitId
@@ -118,7 +118,7 @@ describe('integration/mergeBranch', function () {
 			strom.lib.repository.commitRepository(filesystem)('fourth commit')
 
 			// merge branch "development" onto "master"
-			strom.lib.branch.merge(filesystem)('development')('proper merge')
+			strom.lib.branch.merge(filesystem)('development')
 
 			const commitId = strom.lib.repository.getRepositoryCommitId(filesystem)
 			const commit = strom.lib.commit.getCommit(filesystem)(commitId)
