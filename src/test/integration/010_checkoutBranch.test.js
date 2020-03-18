@@ -14,7 +14,7 @@ const createFilesystem = () => {
 	return filesystem
 }
 
-describe.skip('integration/checkoutBranch', function () {
+describe('integration/checkoutBranch', function () {
 	describe('checkoutBranch', function () {
 		beforeEach(function () {
 			filesystem = createFilesystem()
@@ -77,26 +77,47 @@ describe.skip('integration/checkoutBranch', function () {
 			const files = Object.keys(setup.workingDirectory)
 			const firstFile = files.shift()
 
+			// stage first file and make initial commit
 			strom.lib.stage.stageFile(filesystem)(firstFile)
 
 			strom.lib.repository.commitRepository(filesystem)('initial commit')
 
+			// switch to new branch "development"
 			strom.lib.branch.checkoutBranch(filesystem)('development')
 
+			// stage other files and make next commit
 			strom.lib.stage.stageFiles(filesystem)(files)
 
 			strom.lib.repository.commitRepository(filesystem)('adds other files')
 
+			// switch to branch "master"
 			strom.lib.branch.checkoutBranch(filesystem)('master')
 
-			const state = filesystem.adapter.state()
-
-			const received = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
-			const expected = {
+			// working directory should now only contain first file
+			const receivedMasterFiles = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
+			const expectedMasterFiles = {
 				[firstFile]: hashString(setup.workingDirectory[firstFile])
 			}
 
-			expect(receivedFiles).to.deep.equal(expectedFiles)
+			expect(receivedMasterFiles).to.deep.equal(expectedMasterFiles)
+
+			// switch to branch "development"
+			strom.lib.branch.checkoutBranch(filesystem)('development')
+
+			// working directory should now contain files from first 
+			// commit in "master" plus files from next commit in
+			// branch "development"
+			const receivedDevelopmentFiles = strom.lib.workingDirectory.getWorkingDirectoryFiles(filesystem)
+			const expectedDevelopmentFiles = [
+				...files,
+				firstFile
+			].reduce((previous, current) => {
+				previous[current] = hashString(setup.workingDirectory[current])
+
+				return previous
+			}, {})
+
+			expect(receivedDevelopmentFiles).to.deep.equal(expectedDevelopmentFiles)
 		})
 	})
 })

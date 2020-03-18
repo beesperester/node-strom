@@ -46,7 +46,7 @@ export const commit = (filesystem) => (parents) => (author) => (message) => {
 		tree[file] = filesystem.hash(file)
 
 		// copy file to objects
-		objectModule.copyObject(filesystem)(file)(tree[file])
+		objectModule.storeObject(filesystem)(file)(tree[file])
 	})
 
 	// remove staged files from previous commit files

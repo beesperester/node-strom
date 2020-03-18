@@ -61,6 +61,17 @@ export const checkoutBranch = (filesystem) => (branchName) => {
 		if (commitId) {
 			if (state.added.length > 0 || state.modified.length > 0 || state.removed.length > 0) {
 				throw new Error('You have uncommitted changes in your working directory')
+			} else {
+				// working directory has no added, modified or removed 
+				// uncommited changes so the files from the commit can
+				// be added
+
+				// get files belonging to commit
+				const commit = commitModule.getCommit(filesystem)(commitId)
+				const commitFiles = commitModule.getCommitFiles(filesystem)(commit)
+
+				// update working directory with files from commit
+				workingDirectoryModule.setWorkingDirectoryFiles(filesystem)(commitFiles)
 			}
 		}
 	} else {
@@ -68,15 +79,6 @@ export const checkoutBranch = (filesystem) => (branchName) => {
 		commitId = referenceModule.getReferenceCommitId(filesystem)(head)
 
 		setBranch(filesystem)(branchName)(commitId)
-	}
-
-	if (commitId) {
-		// commit files
-		const commit = commitModule.getCommit(filesystem)(commitId)
-		const commitFiles = commitModule.getCommitFiles(filesystem)(commit)
-
-		// update working directory with files from commit
-		workingDirectoryModule.setWorkingDirectoryFiles(filesystem)(commitFiles)
 	}
 
 	// update head

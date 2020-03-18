@@ -27,11 +27,20 @@ export const setObject = (filesystem) => (id) => (content) => {
 	)(serialize(content))
 }
 
-export const copyObject = (filesystem) => (file) => (id) => {
+export const storeObject = (filesystem) => (file) => (id) => {
 	filesystem.copy(file)(
 		path.join(
 			paths.object,
 			hashPath(id)
 		)
 	)
+}
+
+export const restoreObject = (filesystem) => (id) => (file) => {
+	filesystem.copy(
+		path.join(
+			paths.object,
+			hashPath(id)
+		)
+	)(file)
 }
