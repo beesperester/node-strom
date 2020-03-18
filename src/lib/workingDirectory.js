@@ -28,10 +28,8 @@ export const getWorkingDirectoryFiles = (filesystem) => {
 	})
 }
 
-export const setWorkingDirectoryFiles = (filesystem) => (files) => {
-	const currentFiles = getWorkingDirectoryFiles(filesystem)
-
-	// remove current files from working directory
+export const removeWorkingDirectoryFiles = (filesystem) => (files) => {
+	// remove files from working directory
 	const removeRecursive = (branch) => (dirname) => {
 		Object.keys(branch).forEach((node) => {
 			const nextPath = path.join(dirname, node)
@@ -48,7 +46,13 @@ export const setWorkingDirectoryFiles = (filesystem) => (files) => {
 		})
 	}
 
-	removeRecursive(inflate(currentFiles))('')
+	removeRecursive(inflate(files))('')
+}
+
+export const setWorkingDirectoryFiles = (filesystem) => (files) => {
+	const currentFiles = getWorkingDirectoryFiles(filesystem)
+
+	removeWorkingDirectoryFiles(filesystem)(currentFiles)
 
 	// invalidate cache
 	cache.invalidate('getWorkingDirectoryFiles')
