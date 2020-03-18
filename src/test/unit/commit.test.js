@@ -8,6 +8,7 @@ import { noop } from '../../lib/utilities'
 import { hashMap } from '../../lib/utilities/hashing'
 import { inflate } from '../../lib/utilities/map'
 import * as setup from '../setup'
+import { serialize } from '../../lib/utilities/serialization'
 
 let filesystem, adapter, storage
 
@@ -20,13 +21,13 @@ const createFilesystem = () => {
 }
 
 describe('unit/commit', function () {
+	beforeEach(function () {
+		createFilesystem()
+
+		strom.lib.repository.initRepository(filesystem)
+	})
+
 	describe('commit', function () {
-		beforeEach(function () {
-			createFilesystem()
-
-			strom.lib.repository.initRepository(filesystem)
-		})
-
 		it('succeeds', function () {
 			strom.lib.stage.stageFiles(filesystem)([
 				'setup-cinema4d/model_main.c4d'
@@ -111,6 +112,35 @@ describe('unit/commit', function () {
 				removed: [
 					removedFile
 				]
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+
+		it('modifies file', function () {
+			// compare two commits
+			const modifiedFile = Object.keys(setup.workingDirectory)[0]
+
+			// commit unmodified file
+			strom.lib.stage.stageFile(filesystem)(modifiedFile)
+
+			const firstCommitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			// commit modifield file
+			filesystem.write(modifiedFile)(serialize('this file was modified'))
+
+			strom.lib.stage.stageFile(filesystem)(modifiedFile)
+
+			const secondCommitId = strom.lib.repository.commitRepository(filesystem)('second commit')
+
+			// compare both commits
+			const received = strom.lib.commit.compare(filesystem)(firstCommitId)(secondCommitId)
+			const expected = {
+				added: [],
+				modified: [
+					modifiedFile
+				],
+				removed: []
 			}
 
 			expect(received).to.deep.equal(expected)
