@@ -27,3 +27,14 @@ export const createFilesystem = () => {
 	}
 }
 
+export const inspectFilesystem = (filesystem) => {
+	return filesystem.adapter.state()
+}
+
+export const inspectWorkingDirectory = (filesystem) => {
+	return strom.lib.workingDirectory.getState(filesystem)
+}
+
+export const inspectStage = (filesystem) => {
+	return strom.lib.stage.getStage(filesystem)
+}

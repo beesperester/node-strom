@@ -58,13 +58,14 @@ export const removeFile = (filesystem) => (file) => {
 	const state = getStage(filesystem)
 
 	const nextState = state.remove.includes(file)
-		? {
+		? state
+		: {
 			remove: [
-				...state.remove.filter((x) => x !== file)
+				...state.remove,
+				file
 			],
 			add: state.add
 		}
-		: state
 
 	setStage(filesystem)(nextState)
 }

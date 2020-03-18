@@ -1,7 +1,7 @@
 export const cache = {}
 
 export const config = {
-	enabled: true
+	enabled: false
 }
 
 export default {
