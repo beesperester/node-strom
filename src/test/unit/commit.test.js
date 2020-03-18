@@ -46,6 +46,8 @@ describe('unit/commit', function () {
 			)
 
 			const received = strom.lib.commit.getCommit(filesystem)(commitId)
+
+			delete received['created']
 			const expected = {
 				author,
 				parents,

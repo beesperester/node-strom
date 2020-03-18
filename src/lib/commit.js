@@ -5,6 +5,7 @@ import { getFilesDifference } from './utilities/difference'
 import { hashString } from './utilities/hashing'
 import { deflate, inflate } from './utilities/map'
 import { serialize } from './utilities/serialization'
+import moment from 'moment'
 
 export const getCommitFiles = (filesystem) => (commit) => {
 	// get all files from a commit as path: hash key value pairs
@@ -61,6 +62,7 @@ export const commit = (filesystem) => (parents) => (author) => (message) => {
 		parents,
 		author,
 		message,
+		created: moment().toISOString(),
 		tree: treeModule.packTree(filesystem)(inflate(tree))
 	}
 
