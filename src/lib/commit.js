@@ -15,7 +15,7 @@ export const getCommitFiles = (filesystem) => (commit) => {
 	return deflate(tree)
 }
 
-export const commit = (filesystem) => (parents) => (author) => (message) => {
+export const stageCommit = (filesystem) => (parents) => (author) => (message) => {
 	const stage = stageModule.getStage(filesystem)
 
 	if (stage.add.length === 0 && stage.remove.length === 0) {
@@ -59,21 +59,29 @@ export const commit = (filesystem) => (parents) => (author) => (message) => {
 		}
 	})
 
+	const treeId = treeModule.packTree(filesystem)(inflate(tree))
+
+	const commitId = createCommit(filesystem)(parents)(author)(message)(treeId)
+
+	// reset stage after successfull commit
+	stageModule.resetStage(filesystem)
+
+	return commitId
+}
+
+export const createCommit = (filesystem) => (parents) => (author) => (message) => (treeId) => {
 	const commit = {
 		parents,
 		author,
 		message,
 		created: moment(new Date()).toISOString(true),
-		tree: treeModule.packTree(filesystem)(inflate(tree))
+		tree: treeId
 	}
 
 	const id = hashString(serialize(commit))
 
 	// store commit
 	setCommit(filesystem)(id)(commit)
-
-	// reset stage after successfull commit
-	stageModule.resetStage(filesystem)
 
 	return id
 }
@@ -207,20 +215,11 @@ export const mergeCommit = (filesystem) => (commitIdA) => (commitIdB) => {
 
 				const message = `merges ${commitIdA.substring(0, 6)} with ${commitIdB.substring(0, 6)}`
 
-				const commit = {
-					parents,
-					author,
-					message,
-					created: moment(new Date()).toISOString(true),
-					tree: treeModule.packTree(filesystem)(inflate(mergedCommitFiles))
-				}
+				const treeId = treeModule.packTree(filesystem)(inflate(mergedCommitFiles))
 
-				const mergedCommitId = hashString(serialize(commit))
+				const commitId = createCommit(filesystem)(parents)(author)(message)(treeId)
 
-				// store commit
-				setCommit(filesystem)(mergedCommitId)(commit)
-
-				return mergedCommitId
+				return commitId
 			}
 		}
 

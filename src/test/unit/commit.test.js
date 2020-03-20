@@ -39,7 +39,7 @@ describe('unit/commit', function () {
 			}
 			const message = 'initial commit'
 			const parents = []
-			const commitId = strom.lib.commit.commit(filesystem)(parents)(author)(message)
+			const commitId = strom.lib.commit.stageCommit(filesystem)(parents)(author)(message)
 
 			const tree = inflate(
 				strom.lib.workingDirectory.getWorkingDirectoryFileHashed(filesystem)('setup-cinema4d/model_main.c4d')

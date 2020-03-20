@@ -39,7 +39,7 @@ export const commitRepository = (filesystem) => (message) => {
 		parents.push(commitId)
 	}
 
-	const id = commitModule.commit(filesystem)(parents)(author)(message)
+	const id = commitModule.stageCommit(filesystem)(parents)(author)(message)
 
 	// update head to point to latest commit
 	referenceModule.updateHead(filesystem)(id)
