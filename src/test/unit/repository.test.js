@@ -1,26 +1,70 @@
 // Test related imports.
-import 'chai/register-expect'
 import { expect } from 'chai'
-import { describe, it } from 'mocha'
-
+import 'chai/register-expect'
+import { describe, it, beforeEach } from 'mocha'
 import strom from '../../index'
+import { getBlobPath, getTreePath } from '../../lib/tree'
+import { noop } from '../../lib/utilities'
+import { hashMap } from '../../lib/utilities/hashing'
+import { inflate } from '../../lib/utilities/map'
+import { serialize } from '../../lib/utilities/serialization'
+import * as setup from '../setup'
 
-describe('tests strom.lib.repository module', function () {
-	describe('tests createRepository', function () {
-		it('succeeds with expected arguments', function () {
-			const received = strom.lib.repository.createRepository('test')
+let filesystem, adapter, storage
+
+const createFilesystem = () => {
+	const result = setup.createFilesystem()
+
+	filesystem = result.filesystem
+	adapter = result.adapter
+	storage = result.storage
+}
+
+describe('unit/repository', function () {
+	describe('initRepository', function () {
+		beforeEach(function () {
+			createFilesystem()
+
+			strom.lib.repository.initRepository(filesystem)
+		})
+
+		it('succeeds', function () {
+			/**
+			 * creates neccessary directories and files if missing,
+			 * creates master branch if missing
+			 * .strom
+			 * 	|- stage
+			 * 	|- objects
+			 * 	|- references
+			 * 	|	|- head
+			 *  |	|- tags		
+			 * 	|- branches
+			 * 		|- master
+			*/
+			strom.lib.repository.initRepository(filesystem)
+
+			const received = filesystem.adapter.state()
 			const expected = {
-				name: 'test',
-				branches: [
-					{
-						name: 'master',
-						commit: null
+				...storage,
+
+				'.strom': {
+					stage: serialize({
+						add: [],
+						remove: []
+					}),
+					branches: {
+						master: serialize({
+							commit: null
+						})
+					},
+					objects: {},
+					references: {
+						head: serialize({
+							type: 'branch',
+							reference: 'master'
+						}),
+						tags: {}
 					}
-				],
-				history: [],
-				head: {
-					name: 'master',
-					commit: null
 				}
 			}
 
@@ -28,92 +72,32 @@ describe('tests strom.lib.repository module', function () {
 		})
 	})
 
-	describe('tests checkout', function () {
-		it('succeeds with expected arguments', function () {
-			const repository = strom.lib.repository.createRepository('test')
-			const received = strom.lib.repository.checkout(repository)('development')
+	describe('commitRepository', function () {
+		it('succeeds', function () {
+			strom.lib.stage.stageFiles(filesystem)([
+				'setup-cinema4d/model_main.c4d'
+			])
+
+			const commitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			const tree = inflate(
+				strom.lib.workingDirectory.getWorkingDirectoryFileHashed(filesystem)('setup-cinema4d/model_main.c4d')
+			)
+
+			const received = strom.lib.commit.getCommit(filesystem)(commitId)
+
+			delete received['created']
+
 			const expected = {
-				name: 'test',
-				branches: [
-					{
-						name: 'master',
-						commit: null
-					},
-					{
-						name: 'development',
-						commit: null
-					}
-				],
-				history: [],
-				head: {
-					name: 'development',
-					commit: null
-				}
-			}
-
-			expect(received).to.deep.equal(expected)
-		})
-	})
-
-	describe('tests commit', function () {
-		it('succeeds with expected arguments', function () {
-			const repository = strom.lib.repository.createRepository('test')
-			const commit = strom.lib.commit.createCommit(repository)('initial commit')
-			const received = strom.lib.repository.commit(repository)(commit)
-			const expected = {
-				name: 'test',
-				branches: [
-					{
-						name: 'master',
-						commit: null
-					}
-				],
-				history: [
-					{
-						id: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e',
-				parent: null,
-				message: 'initial commit'
-					}
-				],
-				head: {
-					name: 'master',
-					commit: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e'
-				}
-			}
-
-			expect(received).to.deep.equal(expected)
-		})
-
-		it('succeeds with second commit', function () {
-			const repository = strom.lib.repository.createRepository('test')
-			const firstCommit = strom.lib.commit.createCommit(repository)('initial commit')
-			const repositoryAfterFirstCommit = strom.lib.repository.commit(repository)(firstCommit)
-			const secondCommit = strom.lib.commit.createCommit(repositoryAfterFirstCommit)('adds some stuff')
-			const received = strom.lib.repository.commit(repositoryAfterFirstCommit)(secondCommit)
-			const expected = {
-				name: 'test',
-				branches: [
-					{
-						name: 'master',
-						commit: null
-					}
-				],
-				history: [
-					{
-						id: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e',
-				parent: null,
-				message: 'initial commit'
-					},
-					{
-						id: '3b91bc953cf8f49ac50f7a7d9ebef1428d9dac0d1ee7a01d751ff8907a04bba7',
-				parent: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e',
-				message: 'adds some stuff'
-					}
-				],
-				head: {
-					name: 'master',
-					commit: '3b91bc953cf8f49ac50f7a7d9ebef1428d9dac0d1ee7a01d751ff8907a04bba7'
-				}
+				author: {
+					name: 'Bernhard Esperester',
+					email: 'bernhard@esperester.de'
+				},
+				parents: [],
+				message: 'initial commit',
+				tree: hashMap(
+					tree
+				)(getTreePath)(getBlobPath)(noop)
 			}
 
 			expect(received).to.deep.equal(expected)

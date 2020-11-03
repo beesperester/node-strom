@@ -1,5 +1,6 @@
-export const createAuthor = (username) => {
+export const createAuthor = (name) => (email) => {
 	return {
-		username
+		name,
+		email
 	}
 }

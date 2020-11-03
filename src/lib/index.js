@@ -1,19 +1,27 @@
-import * as dict from './dict'
-import * as utilities from './utilities'
-import * as hash from './hash'
-import * as commit from './commit'
 import * as author from './author'
-import * as stage from './stage'
-import * as repository from './repository'
 import * as branch from './branch'
+import * as commit from './commit'
+import * as config from './config'
+import * as filesystem from './filesystem'
+import * as object from './object'
+import * as reference from './reference'
+import * as repository from './repository'
+import * as stage from './stage'
+import * as tree from './tree'
+import * as utilities from './utilities'
+import * as workingDirectory from './workingDirectory'
 
 export default {
-	dict,
-	utilities,
-	hash,
-	commit,
 	author,
-	stage,
+	branch,
+	commit,
+	config,
+	filesystem,
+	object,
+	reference,
 	repository,
-	branch
+	stage,
+	tree,
+	utilities,
+	workingDirectory
 }

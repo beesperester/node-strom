@@ -1,19 +1,148 @@
 // Test related imports.
-import 'chai/register-expect'
 import { expect } from 'chai'
-import { describe, it } from 'mocha'
-
+import 'chai/register-expect'
+import { beforeEach, describe, it } from 'mocha'
 import strom from '../../index'
+import { getBlobPath, getTreePath } from '../../lib/tree'
+import { noop } from '../../lib/utilities'
+import { hashMap } from '../../lib/utilities/hashing'
+import { inflate } from '../../lib/utilities/map'
+import * as setup from '../setup'
+import { serialize } from '../../lib/utilities/serialization'
 
-describe('tests strom.lib.commit module', function () {
-	describe('tests createCommit', function () {
-		it('succeeds with expected arguments', function () {
-			const repository = strom.lib.repository.createRepository('test')
-			const received = strom.lib.commit.createCommit(repository)('initial commit')
+let filesystem, adapter, storage
+
+const createFilesystem = () => {
+	const result = setup.createFilesystem()
+
+	filesystem = result.filesystem
+	adapter = result.adapter
+	storage = result.storage
+}
+
+describe('unit/commit', function () {
+	beforeEach(function () {
+		createFilesystem()
+
+		strom.lib.repository.initRepository(filesystem)
+	})
+
+	describe('commit', function () {
+		it('succeeds', function () {
+			strom.lib.stage.stageFiles(filesystem)([
+				'setup-cinema4d/model_main.c4d'
+			])
+
+			const author = {
+				name: 'Bernhard Esperester',
+				email: 'bernhard@esperester.de'
+			}
+			const message = 'initial commit'
+			const parents = []
+			const commitId = strom.lib.commit.stageCommit(filesystem)(parents)(author)(message)
+
+			const tree = inflate(
+				strom.lib.workingDirectory.getWorkingDirectoryFileHashed(filesystem)('setup-cinema4d/model_main.c4d')
+			)
+
+			const received = strom.lib.commit.getCommit(filesystem)(commitId)
+
+			delete received['created']
 			const expected = {
-				id: '114017fd47121550446f06d57a16830104b665559d29e10e5c442b73c1a1327e',
-				parent: null,
-				message: 'initial commit'
+				author,
+				parents,
+				message,
+				tree: hashMap(
+					tree
+				)(getTreePath)(getBlobPath)(noop)
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+	})
+
+	describe('compare', function () {
+		it('adds file', function () {
+			// compare two commits
+			const firstFile = Object.keys(setup.workingDirectory)[0]
+			const secondFile = Object.keys(setup.workingDirectory)[1]
+
+			// commit first file
+			strom.lib.stage.stageFile(filesystem)(firstFile)
+
+			const firstCommitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			// commit second file
+			strom.lib.stage.stageFile(filesystem)(secondFile)
+
+			const secondCommitId = strom.lib.repository.commitRepository(filesystem)('second commit')
+
+			// compare both commits
+			const received = strom.lib.commit.compare(filesystem)(firstCommitId)(secondCommitId)
+			const expected = {
+				added: [
+					secondFile
+				],
+				modified: [],
+				removed: []
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+
+		it('removes file', function () {
+			// compare two commits
+			const removedFile = Object.keys(setup.workingDirectory)[0]
+
+			// commit first file
+			strom.lib.stage.stageFiles(filesystem)(Object.keys(setup.workingDirectory))
+
+			const firstCommitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			// commit second file
+			filesystem.remove(removedFile)
+
+			strom.lib.stage.stageFile(filesystem)(removedFile)
+
+			const secondCommitId = strom.lib.repository.commitRepository(filesystem)('second commit')
+
+			// compare both commits
+			const received = strom.lib.commit.compare(filesystem)(firstCommitId)(secondCommitId)
+			const expected = {
+				added: [],
+				modified: [],
+				removed: [
+					removedFile
+				]
+			}
+
+			expect(received).to.deep.equal(expected)
+		})
+
+		it('modifies file', function () {
+			// compare two commits
+			const modifiedFile = Object.keys(setup.workingDirectory)[0]
+
+			// commit unmodified file
+			strom.lib.stage.stageFile(filesystem)(modifiedFile)
+
+			const firstCommitId = strom.lib.repository.commitRepository(filesystem)('initial commit')
+
+			// commit modifield file
+			filesystem.write(modifiedFile)(serialize('this file was modified'))
+
+			strom.lib.stage.stageFile(filesystem)(modifiedFile)
+
+			const secondCommitId = strom.lib.repository.commitRepository(filesystem)('second commit')
+
+			// compare both commits
+			const received = strom.lib.commit.compare(filesystem)(firstCommitId)(secondCommitId)
+			const expected = {
+				added: [],
+				modified: [
+					modifiedFile
+				],
+				removed: []
 			}
 
 			expect(received).to.deep.equal(expected)
